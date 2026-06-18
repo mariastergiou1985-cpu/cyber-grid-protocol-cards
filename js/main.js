@@ -1,3 +1,4 @@
+window.__CGPC_MODULE_STARTED__ = true;
 window.CGPC_MODULE_STARTED = true;
 window.CGPCBoot?.status('Loading JavaScript modules…');
 

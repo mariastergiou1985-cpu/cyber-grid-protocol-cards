@@ -45,6 +45,13 @@
         errorBox.textContent = 'BOOT/RUNTIME ERROR\n\n' + formatError(error);
       };
 
+      // Compatibility bridge used by js/main.js. Keeps the boot overlay and module boot code in sync.
+      window.CGPCBoot = {
+        status: window.__cgpcSetBootStatus,
+        hide: window.__cgpcHideBootScreen,
+        error: window.__cgpcShowBootError
+      };
+
       window.addEventListener('error', function (ev) {
         const target = ev.target;
         if (target && target !== window && target.tagName) {
@@ -59,9 +66,9 @@
       });
 
       window.setTimeout(function () {
-        if (!window.__CGPC_MODULE_STARTED__) {
+        if (!window.__CGPC_MODULE_STARTED__ && !window.CGPC_MODULE_STARTED) {
           window.__cgpcShowBootError(
-            'js/main.js did not start. This usually means the module path is wrong, the file is missing, or the browser is opening the game from a restricted file:// path. Run it through localhost/Live Server or upload the ZIP as an itch.io HTML5 game.'
+            'js/main.js did not start. Check that ./js/main.js exists at the repository root, GitHub Pages has finished deploying, and the browser is not loading an old cached build.'
           );
         }
       }, 3500);
