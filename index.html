@@ -2,59 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#030812" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Cyber-Grid: Protocol Cards</title>
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
-  <div id="bootOverlay" role="status" aria-live="polite">
-    <div class="boot-card">
-      <div class="boot-title">CYBER-GRID: PROTOCOL CARDS</div>
-      <div id="bootStatus">Booting module…</div>
-      <div class="boot-hint">Run through localhost / Live Server / GitHub Pages.</div>
-    </div>
+  <div id="bootScreen" role="status" aria-live="polite">
+    <div class="boot-title">CYBER-GRID: PROTOCOL CARDS</div>
+    <div id="bootStatus">Booting module…</div>
   </div>
   <div id="bootError" hidden></div>
-  <noscript><div class="noscript">JavaScript is required to play Cyber-Grid: Protocol Cards.</div></noscript>
-  <main id="stage">
-    <canvas id="game" width="1600" height="900" aria-label="Cyber-Grid Protocol Cards game canvas"></canvas>
-  </main>
+  <noscript>
+    <div class="noscript">JavaScript is required to run Cyber-Grid: Protocol Cards.</div>
+  </noscript>
+  <canvas id="game" width="1600" height="900" aria-label="Cyber-Grid Protocol Cards"></canvas>
+
   <script>
-    (function bootGuard() {
-      const status = document.getElementById('bootStatus');
-      const overlay = document.getElementById('bootOverlay');
+    (function () {
       const errorBox = document.getElementById('bootError');
-      function format(err) {
-        if (!err) return 'Unknown boot/runtime error.';
-        if (err.stack) return err.stack;
-        if (err.message) return err.message;
-        return String(err);
+      const statusBox = document.getElementById('bootStatus');
+      const bootScreen = document.getElementById('bootScreen');
+
+      function formatError(error) {
+        if (!error) return 'Unknown boot/runtime error.';
+        if (error.stack) return error.stack;
+        if (error.message) return error.message;
+        return String(error);
       }
-      window.CGPCBoot = {
-        status(text) { if (status) status.textContent = text; },
-        hide() { if (overlay) overlay.hidden = true; },
-        error(err) {
-          if (overlay) overlay.hidden = true;
-          if (!errorBox) return;
-          errorBox.hidden = false;
-          errorBox.textContent = 'BOOT / RUNTIME ERROR\n\n' + format(err);
-        }
+
+      window.__cgpcSetBootStatus = function (text) {
+        if (statusBox) statusBox.textContent = text;
       };
-      window.addEventListener('error', ev => {
-        const t = ev.target;
-        if (t && t !== window && (t.src || t.href)) {
-          window.CGPCBoot.error(`Failed to load resource: ${t.src || t.href}`);
-        } else {
-          window.CGPCBoot.error(ev.error || ev.message || ev);
+
+      window.__cgpcHideBootScreen = function () {
+        if (bootScreen) bootScreen.hidden = true;
+      };
+
+      window.__cgpcShowBootError = function (error) {
+        if (bootScreen) bootScreen.hidden = true;
+        if (!errorBox) return;
+        errorBox.hidden = false;
+        errorBox.textContent = 'BOOT/RUNTIME ERROR\n\n' + formatError(error);
+      };
+
+      window.addEventListener('error', function (ev) {
+        const target = ev.target;
+        if (target && target !== window && target.tagName) {
+          window.__cgpcShowBootError('Failed to load resource: <' + target.tagName.toLowerCase() + '> ' + (target.src || target.href || 'unknown path'));
+          return;
         }
+        window.__cgpcShowBootError(ev.error || ev.message || ev);
       }, true);
-      window.addEventListener('unhandledrejection', ev => window.CGPCBoot.error(ev.reason || 'Unhandled promise rejection.'));
-      setTimeout(() => {
-        if (!window.CGPC_MODULE_STARTED) {
-          window.CGPCBoot.error('js/main.js did not start. Check that index.html is at repository root and is loading ./js/main.js through localhost, Live Server, or GitHub Pages. Do not test from a broken temporary ZIP path.');
+
+      window.addEventListener('unhandledrejection', function (ev) {
+        window.__cgpcShowBootError(ev.reason || 'Unhandled promise rejection during boot.');
+      });
+
+      window.setTimeout(function () {
+        if (!window.__CGPC_MODULE_STARTED__) {
+          window.__cgpcShowBootError(
+            'js/main.js did not start. This usually means the module path is wrong, the file is missing, or the browser is opening the game from a restricted file:// path. Run it through localhost/Live Server or upload the ZIP as an itch.io HTML5 game.'
+          );
         }
-      }, 4000);
+      }, 3500);
     }());
   </script>
   <script type="module" src="./js/main.js"></script>
