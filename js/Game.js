@@ -3,24 +3,80 @@ const H = 900;
 const SAVE_KEY = 'cyber-grid-protocol-cards-run-v1';
 
 const CARD_DB = {
-  neon_slash: { title: 'Neon Slash', cost: 1, type: 'ATTACK', rarity: 'common', element: 'cyan', art: 'card_neon_slash', text: 'Deal 7 damage.', damage: 7 },
-  grid_guard: { title: 'Grid Guard', cost: 1, type: 'SKILL', rarity: 'common', element: 'cyan', art: 'card_grid_guard', text: 'Gain 8 Block.', block: 8 },
-  protocol_spark: { title: 'Protocol Spark', cost: 1, type: 'ATTACK', rarity: 'protocol', element: 'electric', art: 'card_protocol_spark', text: 'Deal 9 damage. Apply 1 Shock.', damage: 9, shock: 1 },
-  toxin_injection: { title: 'Toxin Injection', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'toxin', art: 'card_toxin_injection', text: 'Deal 9 damage. Apply 2 Poison.', damage: 9, poison: 2 },
-  overclock: { title: 'Overclock', cost: 1, type: 'POWER', rarity: 'rare', element: 'purple', art: 'card_overclock', text: 'Gain 1 Energy. Draw 1 card.', energy: 1, draw: 1 },
-  frost_strike: { title: 'Frost Strike', cost: 1, type: 'ATTACK', rarity: 'common', element: 'frost', art: 'card_frost_strike', text: 'Deal 8 damage. Apply 2 Frost.', damage: 8, frost: 2 },
-  shock_blade: { title: 'Shock Blade', cost: 1, type: 'ATTACK', rarity: 'common', element: 'electric', art: 'card_shock_blade', text: 'Deal 7 damage. Apply 2 Shock.', damage: 7, shock: 2 },
-  plasma_cut: { title: 'Plasma Cut', cost: 2, type: 'ATTACK', rarity: 'uncommon', element: 'fire', art: 'card_plasma_cut', text: 'Deal 12 damage. Apply 2 Burn.', damage: 12, burn: 2 }
+  // Core starter cards
+  neon_slash: { title: 'Neon Slash', cost: 1, type: 'ATTACK', rarity: 'common', element: 'cyan', elementTags: ['physical'], art: 'card_neon_slash', text: 'Deal 7 damage. Apply 1 Vulnerable.', damage: 7, vulnerable: 1 },
+  grid_guard: { title: 'Grid Guard', cost: 1, type: 'SKILL', rarity: 'common', element: 'cyan', elementTags: ['shield'], art: 'card_grid_guard', text: 'Gain 8 Block.', block: 8 },
+  protocol_spark: { title: 'Protocol Spark', cost: 1, type: 'ATTACK', rarity: 'protocol', element: 'electric', elementTags: ['electric'], art: 'card_protocol_spark', text: 'Deal 9 damage. Apply 1 Shock.', damage: 9, shock: 1 },
+  overclock: { title: 'Overclock', cost: 1, type: 'POWER', rarity: 'rare', element: 'purple', elementTags: ['electric'], art: 'card_overclock', text: 'Gain 1 Energy. Draw 1 card. Add 1 Overclock.', energy: 1, draw: 1, power: 'Overclock', powerAmount: 1 },
+
+  // Element attack cards
+  frost_strike: { title: 'Frost Strike', cost: 1, type: 'ATTACK', rarity: 'common', element: 'frost', elementTags: ['frost'], art: 'card_frost_strike', text: 'Deal 8 damage. Apply 2 Frost.', damage: 8, frost: 2 },
+  shock_blade: { title: 'Shock Blade', cost: 1, type: 'ATTACK', rarity: 'common', element: 'electric', elementTags: ['electric'], art: 'card_shock_blade', text: 'Deal 7 damage. Apply 2 Shock.', damage: 7, shock: 2 },
+  plasma_cut: { title: 'Plasma Cut', cost: 2, type: 'ATTACK', rarity: 'uncommon', element: 'fire', elementTags: ['fire'], art: 'card_plasma_cut', text: 'Deal 12 damage. Apply 2 Burn.', damage: 12, burn: 2 },
+  toxin_injection: { title: 'Toxin Injection', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'toxin', elementTags: ['toxin'], art: 'card_toxin_injection', text: 'Deal 9 damage. Apply 2 Poison.', damage: 9, poison: 2 },
+  water_pulse: { title: 'Water Pulse', cost: 1, type: 'SKILL', rarity: 'common', element: 'water', elementTags: ['water'], art: 'card_grid_guard', text: 'Gain 5 Block. Apply 2 Soaked.', block: 5, soaked: 2 },
+  rad_lance: { title: 'Rad Lance', cost: 1, type: 'ATTACK', rarity: 'uncommon', element: 'radiation', elementTags: ['radiation'], art: 'card_protocol_spark', text: 'Deal 6 damage. Apply 2 Rad Mark.', damage: 6, rad: 2 },
+  corrosive_needle: { title: 'Corrosive Needle', cost: 1, type: 'ATTACK', rarity: 'common', element: 'toxin', elementTags: ['toxin'], art: 'card_toxin_injection', text: 'Deal 5 damage. Apply 3 Poison.', damage: 5, poison: 3 },
+  cryo_guard: { title: 'Cryo Guard', cost: 1, type: 'SKILL', rarity: 'common', element: 'frost', elementTags: ['frost'], art: 'card_grid_guard', text: 'Gain 7 Block. Apply 1 Frost.', block: 7, frost: 1 },
+  voltage_step: { title: 'Voltage Step', cost: 0, type: 'SKILL', rarity: 'uncommon', element: 'electric', elementTags: ['electric'], art: 'card_overclock', text: 'Draw 1. Apply 1 Shock.', draw: 1, shock: 1 },
+  flame_barrier: { title: 'Flame Barrier', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'fire', elementTags: ['fire'], art: 'card_grid_guard', text: 'Gain 6 Block. Apply 2 Burn.', block: 6, burn: 2 },
+  toxic_screen: { title: 'Toxic Screen', cost: 1, type: 'SKILL', rarity: 'common', element: 'toxin', elementTags: ['toxin'], art: 'card_toxin_injection', text: 'Gain 6 Block. Apply 1 Poison to all.', block: 6, poison: 1, target: 'all' },
+  ion_pierce: { title: 'Ion Pierce', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'electric', elementTags: ['electric', 'radiation'], art: 'card_shock_blade', text: 'Deal 14 damage. Apply 1 Shock and 1 Rad Mark.', damage: 14, shock: 1, rad: 1 },
+
+  // Oni Cataclysm first-character deck cards
+  oni_cleave: { title: 'Oni Cleave', cost: 1, type: 'ATTACK', rarity: 'common', element: 'fire', elementTags: ['fire'], art: 'card_plasma_cut', text: 'Deal 8 damage. Apply 1 Burn.', damage: 8, burn: 1 },
+  burning_aegis: { title: 'Burning Aegis', cost: 1, type: 'SKILL', rarity: 'common', element: 'fire', elementTags: ['fire'], art: 'card_grid_guard', text: 'Gain 9 Block. Apply 1 Burn.', block: 9, burn: 1 },
+  radiation_mark: { title: 'Radiation Mark', cost: 1, type: 'ATTACK', rarity: 'common', element: 'radiation', elementTags: ['radiation'], art: 'card_protocol_spark', text: 'Deal 5 damage. Apply 3 Rad Mark.', damage: 5, rad: 3 },
+  demon_reactor: { title: 'Demon Reactor', cost: 1, type: 'POWER', rarity: 'rare', element: 'fire', elementTags: ['fire', 'radiation'], art: 'card_overclock', text: '+2 Fire/Rad damage. Burn/Rad +1.', power: 'Demon Reactor', powerAmount: 1 },
+  blood_price: { title: 'Blood Price', cost: 0, type: 'CORRUPTION', rarity: 'rare', element: 'purple', elementTags: ['fire'], art: 'card_overclock', text: 'Lose 3 HP. Gain 2 Energy. Draw 1.', selfDamage: 3, energy: 2, draw: 1 },
+  core_detonate: { title: 'Core Detonate', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'fire', elementTags: ['fire', 'radiation'], art: 'card_plasma_cut', text: 'Deal 10 to ALL. Apply 2 Burn and 1 Rad.', damage: 10, target: 'all', burn: 2, rad: 1 },
+  thunder_oni: { title: 'Thunder Oni', cost: 1, type: 'ATTACK', rarity: 'uncommon', element: 'electric', elementTags: ['electric'], art: 'card_shock_blade', text: 'Deal 6 damage twice. Apply 1 Shock.', damage: 6, hits: 2, shock: 1 },
+  hellfire_pact: { title: 'Hellfire Pact', cost: 1, type: 'POWER', rarity: 'rare', element: 'fire', elementTags: ['fire'], art: 'card_overclock', text: 'Burn +1. Gain 4 Block when applying Burn.', power: 'Hellfire Pact', powerAmount: 1 },
+
+  // Buff powers for future character decks
+  guardian_matrix: { title: 'Guardian Matrix', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'shield', elementTags: ['shield'], art: 'card_grid_guard', text: 'Block cards gain +2 Block.', power: 'Guardian Matrix', powerAmount: 1 },
+  storm_circuit: { title: 'Storm Circuit', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'electric', elementTags: ['electric'], art: 'card_protocol_spark', text: 'Electric attacks gain +1 damage and +1 Shock.', power: 'Storm Circuit', powerAmount: 1 },
+  cryo_engine: { title: 'Cryo Engine', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'frost', elementTags: ['frost'], art: 'card_frost_strike', text: 'Frost cards apply +1 Frost.', power: 'Cryo Engine', powerAmount: 1 },
+  venom_injector: { title: 'Venom Injector', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'toxin', elementTags: ['toxin'], art: 'card_toxin_injection', text: 'Toxin cards apply +1 Poison.', power: 'Venom Injector', powerAmount: 1 },
+  water_core: { title: 'Water Core', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'water', elementTags: ['water'], art: 'card_grid_guard', text: 'Water/Frost cards give +2 Block.', power: 'Water Core', powerAmount: 1 }
 };
 
 const CHARACTERS = [
-  { id: 'skeleton_vanguard', name: 'Neon Skeleton Vanguard', hp: 75, art: 'char_skeleton_vanguard', color: '#54f8ff' },
-  { id: 'assassin_clone', name: 'Assassin Clone', hp: 65, art: 'char_assassin_clone', color: '#ff4df0' },
-  { id: 'cyber_arm_hero', name: 'Cyber Arm Hero', hp: 82, art: 'char_cyber_arm_hero', color: '#ff9f2f' },
-  { id: 'taekwondo_fighter', name: 'Taekwondo Fighter', hp: 70, art: 'char_taekwondo_fighter', color: '#42f6ff' },
-  { id: 'oni_cataclysm', name: 'Oni Cataclysm', hp: 92, art: 'char_oni_cataclysm', color: '#ff315e' },
-  { id: 'euclid_vector', name: 'Euclid Vector', hp: 68, art: 'char_euclid_vector', color: '#8cff3f' },
-  { id: 'brawler_warrior', name: 'Brawler Warrior', hp: 85, art: 'char_brawler_warrior', color: '#3fffc1' }
+  {
+    id: 'skeleton_vanguard', name: 'Neon Skeleton Vanguard', hp: 75, art: 'char_skeleton_vanguard', color: '#54f8ff',
+    starterDeck: ['neon_slash','neon_slash','neon_slash','grid_guard','grid_guard','grid_guard','protocol_spark','shock_blade','frost_strike','overclock'],
+    rewardTheme: ['physical','electric','frost','shield']
+  },
+  {
+    id: 'assassin_clone', name: 'Assassin Clone', hp: 65, art: 'char_assassin_clone', color: '#ff4df0',
+    starterDeck: ['neon_slash','neon_slash','grid_guard','grid_guard','toxin_injection','corrosive_needle','voltage_step','overclock','toxic_screen','protocol_spark'],
+    rewardTheme: ['toxin','electric','purple']
+  },
+  {
+    id: 'cyber_arm_hero', name: 'Cyber Arm Hero', hp: 82, art: 'char_cyber_arm_hero', color: '#ff9f2f',
+    starterDeck: ['shock_blade','shock_blade','grid_guard','grid_guard','protocol_spark','ion_pierce','guardian_matrix','overclock','neon_slash','rad_lance'],
+    rewardTheme: ['electric','radiation','shield']
+  },
+  {
+    id: 'taekwondo_fighter', name: 'Taekwondo Fighter', hp: 70, art: 'char_taekwondo_fighter', color: '#42f6ff',
+    starterDeck: ['frost_strike','frost_strike','grid_guard','grid_guard','cryo_guard','voltage_step','shock_blade','water_pulse','protocol_spark','overclock'],
+    rewardTheme: ['frost','water','electric']
+  },
+  {
+    id: 'oni_cataclysm', name: 'Oni Cataclysm', hp: 92, art: 'char_oni_cataclysm', color: '#ff315e',
+    starterDeck: ['oni_cleave','oni_cleave','burning_aegis','burning_aegis','radiation_mark','radiation_mark','shock_blade','plasma_cut','blood_price','demon_reactor'],
+    rewardTheme: ['fire','radiation','electric','purple']
+  },
+  {
+    id: 'euclid_vector', name: 'Euclid Vector', hp: 68, art: 'char_euclid_vector', color: '#8cff3f',
+    starterDeck: ['toxin_injection','corrosive_needle','toxic_screen','grid_guard','grid_guard','rad_lance','venom_injector','water_pulse','neon_slash','overclock'],
+    rewardTheme: ['toxin','radiation','water']
+  },
+  {
+    id: 'brawler_warrior', name: 'Brawler Warrior', hp: 85, art: 'char_brawler_warrior', color: '#3fffc1',
+    starterDeck: ['neon_slash','neon_slash','shock_blade','grid_guard','grid_guard','water_pulse','guardian_matrix','thunder_oni','frost_strike','overclock'],
+    rewardTheme: ['physical','electric','water','shield']
+  }
 ];
 
 const ENEMIES = [
@@ -124,6 +180,8 @@ export class Game {
     this.node = 0;
     this.credits = 50;
     this.block = 0;
+    this.powers = {};
+    this.elementMemory = new Set();
     this.message = '';
     this.fx = [];
     this.rewardCards = [];
@@ -170,10 +228,28 @@ export class Game {
     this.player = { ...copy(base), hp: base.hp, maxHp: base.hp, block: 0 };
     this.credits = 50;
     this.node = 0;
-    this.maxEnergy = 3;
-    this.deck = ['neon_slash', 'neon_slash', 'neon_slash', 'neon_slash', 'grid_guard', 'grid_guard', 'grid_guard', 'protocol_spark', 'frost_strike', 'shock_blade'];
+    this.maxEnergy = base.id === 'oni_cataclysm' ? 3 : 3;
+    this.powers = {};
+    this.elementMemory = new Set();
+    this.deck = this.getStarterDeck(base);
     this.startCombat('battle');
     this.save();
+  }
+
+
+  getStarterDeck(character) {
+    const starter = character?.starterDeck || CHARACTERS[0].starterDeck || ['neon_slash', 'grid_guard', 'protocol_spark'];
+    return starter.filter(id => CARD_DB[id]);
+  }
+
+  cardRewardPool() {
+    const ch = CHARACTERS[this.selectedCharacterIndex] ?? CHARACTERS[0];
+    const theme = new Set(ch.rewardTheme || []);
+    const themed = Object.keys(CARD_DB).filter(id => {
+      const tags = CARD_DB[id].elementTags || [];
+      return tags.some(t => theme.has(t)) || ['protocol','rare'].includes(CARD_DB[id].rarity);
+    });
+    return themed.length >= 3 ? themed : Object.keys(CARD_DB);
   }
 
   save() {
@@ -190,7 +266,9 @@ export class Game {
       this.selectedCharacterIndex = data.character ?? 0;
       const base = CHARACTERS[this.selectedCharacterIndex] ?? CHARACTERS[0];
       this.player = { ...copy(base), hp: data.hp ?? base.hp, maxHp: data.maxHp ?? base.hp, block: 0 };
-      this.deck = Array.isArray(data.deck) ? data.deck.filter(id => CARD_DB[id]) : ['neon_slash', 'grid_guard', 'protocol_spark'];
+      this.deck = Array.isArray(data.deck) ? data.deck.filter(id => CARD_DB[id]) : this.getStarterDeck(base);
+      this.powers = {};
+      this.elementMemory = new Set();
       this.node = data.node ?? 0;
       this.credits = data.credits ?? 50;
       this.state = 'map';
@@ -198,6 +276,12 @@ export class Game {
       console.warn('[save] invalid save', err);
       this.newRun();
     }
+  }
+
+
+  cardPrice(card, slotIndex = 0) {
+    const rarityBase = { common: 90, uncommon: 115, rare: 150, protocol: 165 }[card?.rarity] || 100;
+    return rarityBase + slotIndex * 10;
   }
 
   startCombat(kind = 'battle') {
@@ -240,40 +324,130 @@ export class Game {
     this.energy -= card.cost;
     this.hand.splice(index, 1);
     this.discard.push(id);
-    if (card.block) {
-      this.block += card.block;
-      this.floatText(295, 650, `+${card.block} BLOCK`, '#54f8ff');
+
+    this.registerElements(card);
+
+    if (card.selfDamage) {
+      this.player.hp = Math.max(1, this.player.hp - card.selfDamage);
+      this.floatText(285, 430, `-${card.selfDamage} HP`, '#ff4767');
     }
+
+    if (card.power) {
+      this.gainPower(card.power, card.powerAmount || 1);
+      this.floatText(300, 610, `${card.power} +${card.powerAmount || 1}`, this.cardColor(card));
+    }
+
+    const block = this.computeBlock(card);
+    if (block) {
+      this.block += block;
+      this.floatText(295, 650, `+${block} BLOCK`, '#54f8ff');
+    }
+
     if (card.energy) {
-      this.energy += card.energy;
-      this.floatText(300, 715, '+1 ENERGY', '#ffd86a');
+      this.energy += card.energy + (this.powers.Overclock || 0);
+      this.floatText(300, 715, `+${card.energy + (this.powers.Overclock || 0)} ENERGY`, '#ffd86a');
     }
     if (card.draw) this.drawCards(card.draw);
-    if (card.damage) {
-      const target = this.enemies.find(e => e.hp > 0);
-      if (target) {
-        let dmg = card.damage;
-        if (target.status?.Shock) dmg += target.status.Shock;
-        target.hp -= dmg;
-        this.floatText(1040, 370, `-${dmg}`, '#ff4767');
-        this.fx.push({ x: 1060, y: 430, life: .35, color: card.element === 'toxin' ? '#8cff3f' : card.element === 'frost' ? '#80dfff' : card.element === 'electric' ? '#ffe14a' : '#ff4df0', kind: 'burst' });
+
+    if (card.damage || card.poison || card.shock || card.frost || card.burn || card.rad || card.soaked || card.vulnerable || card.weak) {
+      const targets = card.target === 'all' ? this.enemies.filter(e => e.hp > 0) : this.enemies.filter(e => e.hp > 0).slice(0, 1);
+      targets.forEach((target, ti) => {
+        const hits = card.hits || 1;
+        for (let h = 0; h < hits; h++) {
+          if (card.damage) {
+            const dmg = this.computeDamage(card, target);
+            target.hp -= dmg;
+            this.floatText(1040 + ti * 70, 370 + h * 28, `-${dmg}`, '#ff4767');
+            this.fx.push({ x: 1060 + ti * 70, y: 430, life: .35, color: this.cardColor(card), kind: 'burst' });
+          }
+        }
         this.applyStatus(target, card);
-      }
+        this.tryFusion(card, target);
+      });
     }
+
     if (this.enemies.every(e => e.hp <= 0)) this.winCombat();
+  }
+
+  computeDamage(card, target) {
+    let dmg = card.damage || 0;
+    const tags = card.elementTags || [];
+    if (this.powers['Demon Reactor'] && (tags.includes('fire') || tags.includes('radiation'))) dmg += 2 * this.powers['Demon Reactor'];
+    if (this.powers['Storm Circuit'] && tags.includes('electric')) dmg += this.powers['Storm Circuit'];
+    if (target.status?.Shock) dmg += target.status.Shock;
+    if (target.status?.['Rad Mark']) dmg += target.status['Rad Mark'];
+    if (target.status?.Vulnerable) dmg = Math.ceil(dmg * 1.5);
+    if (target.status?.Soaked && tags.includes('electric')) dmg += 3;
+    return Math.max(0, Math.ceil(dmg));
+  }
+
+  computeBlock(card) {
+    let block = card.block || 0;
+    const tags = card.elementTags || [];
+    if (block && this.powers['Guardian Matrix']) block += 2 * this.powers['Guardian Matrix'];
+    if (block && this.powers['Water Core'] && (tags.includes('water') || tags.includes('frost'))) block += 2 * this.powers['Water Core'];
+    return block;
+  }
+
+  gainPower(name, amount = 1) {
+    this.powers[name] = (this.powers[name] || 0) + amount;
+  }
+
+  registerElements(card) {
+    for (const tag of card.elementTags || []) {
+      if (!['shield', 'physical', 'purple'].includes(tag)) this.elementMemory.add(tag);
+    }
+  }
+
+  tryFusion(card, enemy) {
+    if (!enemy || enemy.hp <= 0) return;
+    const has = e => this.elementMemory.has(e);
+    let fusion = null;
+    if (has('fire') && has('electric')) fusion = { name: 'PLASMA BURN', damage: 4, burn: 1, shock: 1, color: '#ffd86a' };
+    else if (has('toxin') && has('frost')) fusion = { name: 'VIRAL FREEZE', damage: 2, poison: 1, frost: 1, color: '#80dfff' };
+    else if (has('radiation') && has('electric')) fusion = { name: 'ION STORM', damage: 5, shock: 1, rad: 1, color: '#ffe14a' };
+    else if (has('fire') && has('frost')) fusion = { name: 'THERMAL SHOCK', damage: 6, burn: 1, color: '#ff7740' };
+    else if (has('toxin') && has('electric')) fusion = { name: 'NEUROTOXIN ARC', damage: 3, poison: 1, shock: 1, color: '#8cff3f' };
+    if (!fusion) return;
+    enemy.hp -= fusion.damage;
+    this.applyStatus(enemy, fusion);
+    this.floatText(800, 240, fusion.name, fusion.color);
+    this.fx.push({ x: 1030, y: 420, life: .6, color: fusion.color, kind: 'burst' });
+    if (this.powers['Hellfire Pact'] && fusion.burn) this.block += 4 * this.powers['Hellfire Pact'];
   }
 
   applyStatus(enemy, card) {
     enemy.status = enemy.status || {};
+    const tags = card.elementTags || [];
+    const scale = (name, amount) => {
+      if (!amount) return 0;
+      let a = amount;
+      if (name === 'Burn' && (this.powers['Demon Reactor'] || this.powers['Hellfire Pact'])) a += (this.powers['Demon Reactor'] || 0) + (this.powers['Hellfire Pact'] || 0);
+      if (name === 'Shock' && this.powers['Storm Circuit']) a += this.powers['Storm Circuit'];
+      if (name === 'Frost' && this.powers['Cryo Engine']) a += this.powers['Cryo Engine'];
+      if (name === 'Poison' && this.powers['Venom Injector']) a += this.powers['Venom Injector'];
+      if (name === 'Rad Mark' && this.powers['Demon Reactor']) a += this.powers['Demon Reactor'];
+      return a;
+    };
     const apply = (name, amount) => {
-      if (!amount) return;
-      enemy.status[name] = (enemy.status[name] || 0) + amount;
-      this.floatText(1090, 500, `${name} +${amount}`, this.statusColor(name));
+      const a = scale(name, amount);
+      if (!a) return;
+      enemy.status[name] = (enemy.status[name] || 0) + a;
+      this.floatText(1090, 500, `${name} +${a}`, this.statusColor(name));
+      if (name === 'Burn' && this.powers['Hellfire Pact']) {
+        const b = 4 * this.powers['Hellfire Pact'];
+        this.block += b;
+        this.floatText(300, 680, `+${b} PACT BLOCK`, '#ff7740');
+      }
     };
     apply('Poison', card.poison);
     apply('Shock', card.shock);
     apply('Frost', card.frost);
     apply('Burn', card.burn);
+    apply('Rad Mark', card.rad);
+    apply('Soaked', card.soaked);
+    apply('Vulnerable', card.vulnerable);
+    apply('Weak', card.weak);
   }
 
   endTurn() {
@@ -283,11 +457,18 @@ export class Game {
     for (const e of this.enemies) {
       if (e.hp <= 0) continue;
       if (e.status?.Poison) { e.hp -= e.status.Poison; this.floatText(1050, 445, `Poison -${e.status.Poison}`, '#8cff3f'); }
-      if (e.status?.Burn) { e.hp -= e.status.Burn; this.floatText(1050, 475, `Burn -${e.status.Burn}`, '#ff7740'); }
+      if (e.status?.Burn) { e.hp -= e.status.Burn; this.floatText(1050, 475, `Burn -${e.status.Burn}`, '#ff7740'); e.status.Burn = Math.max(0, e.status.Burn - 1); }
+      if (e.status?.['Rad Mark']) { e.hp -= Math.ceil(e.status['Rad Mark'] / 2); this.floatText(1050, 505, `Rad -${Math.ceil(e.status['Rad Mark'] / 2)}`, '#cfff42'); }
       if (e.hp <= 0) continue;
       const frozen = e.status?.Frost > 0;
-      if (frozen) { e.status.Frost -= 1; this.floatText(1050, 505, 'FROZEN', '#80dfff'); continue; }
-      total += e.damage;
+      if (frozen) { e.status.Frost -= 1; this.floatText(1050, 535, 'FROZEN', '#80dfff'); continue; }
+      let dmg = e.damage;
+      if (e.status?.Weak) dmg = Math.ceil(dmg * 0.70);
+      total += dmg;
+      if (e.status?.Shock) e.status.Shock = Math.max(0, e.status.Shock - 1);
+      if (e.status?.Vulnerable) e.status.Vulnerable = Math.max(0, e.status.Vulnerable - 1);
+      if (e.status?.Weak) e.status.Weak = Math.max(0, e.status.Weak - 1);
+      if (e.status?.Soaked) e.status.Soaked = Math.max(0, e.status.Soaked - 1);
     }
     const absorbed = Math.min(this.block, total);
     const hpLoss = total - absorbed;
@@ -300,6 +481,7 @@ export class Game {
     this.hand = [];
     this.energy = this.maxEnergy;
     this.block = 0;
+    this.elementMemory = new Set();
     this.turn = 'player';
     this.drawCards(5);
     this.save();
@@ -307,7 +489,7 @@ export class Game {
 
   winCombat() {
     this.credits += 25 + this.node * 3;
-    this.rewardCards = shuffle(Object.keys(CARD_DB)).slice(0, 3);
+    this.rewardCards = shuffle(this.cardRewardPool()).slice(0, 3);
     this.state = 'reward';
     this.save();
   }
@@ -328,7 +510,7 @@ export class Game {
   }
 
   openShop() {
-    this.shopCards = shuffle(Object.keys(CARD_DB)).slice(0, 5).map((id, i) => ({ id, price: [90, 95, 120, 110, 140][i] ?? 100, sold: false }));
+    this.shopCards = shuffle(this.cardRewardPool()).slice(0, 5).map((id, i) => ({ id, price: this.cardPrice(CARD_DB[id], i), sold: false }));
     this.state = 'shop';
   }
 
@@ -353,7 +535,7 @@ export class Game {
   }
 
   statusColor(name) {
-    return { Poison: '#8cff3f', Shock: '#ffe14a', Frost: '#80dfff', Burn: '#ff7740' }[name] || '#fff';
+    return { Poison: '#8cff3f', Shock: '#ffe14a', Frost: '#80dfff', Burn: '#ff7740', 'Rad Mark': '#cfff42', Soaked: '#5fd7ff', Vulnerable: '#ffb86a', Weak: '#b164ff' }[name] || '#fff';
   }
 
   handleClick(x, y) {
@@ -523,47 +705,71 @@ export class Game {
   drawPlayer(ctx) {
     const ch = this.player ?? CHARACTERS[this.selectedCharacterIndex];
     const img = this.assets.get(ch.art);
-    const bob = Math.sin(this.time * 2.0) * 5;
-    this.shadow(ctx, 270, 705, 280, 52, ch.color);
+    const bob = Math.sin(this.time * 2.0) * 4;
+    this.shadow(ctx, 250, 704, 230, 42, ch.color);
     if (img) {
       ctx.save();
       ctx.shadowColor = ch.color;
-      ctx.shadowBlur = 22;
-      drawContain(ctx, img, 80, 178 + bob, 430, 535);
+      ctx.shadowBlur = 18;
+      // Smaller, cleaner hero scale. Bottom-aligned to the combat ground.
+      drawContain(ctx, img, 75, 240 + bob, 360, 470);
       ctx.restore();
     } else {
-      this.fallbackUnit(ctx, 270, 480 + bob, ch.color, 'HERO');
+      this.fallbackUnit(ctx, 250, 500 + bob, ch.color, 'HERO');
     }
-    this.hpBar(ctx, 160, 715, 260, 22, this.player.hp, this.player.maxHp, '#ff4767');
-    if (this.block > 0) this.badge(ctx, 452, 717, this.block, '#54f8ff');
+    this.hpBar(ctx, 125, 713, 250, 20, this.player.hp, this.player.maxHp, '#ff4767');
+    if (this.block > 0) this.badge(ctx, 410, 715, this.block, '#54f8ff');
+    this.drawPowerBadges(ctx, 140, 758);
   }
 
   drawEnemies(ctx) {
     const alive = this.enemies.filter(e => e.hp > 0);
+    const layouts = {
+      1: [1125],
+      2: [875, 1225],
+      3: [775, 1065, 1355]
+    };
+    const xs = layouts[alive.length] || layouts[3];
     alive.forEach((e, i) => {
-      const x = alive.length === 1 ? 1060 : 845 + i * 265;
-      const y = i % 2 ? 207 : 230;
+      const x = xs[i];
+      const spriteTop = i % 2 ? 265 : 285;
+      const spriteW = e.id === 'toxic_drone_hound' ? 255 : 240;
+      const spriteH = e.id === 'toxic_drone_hound' ? 300 : 325;
       const img = this.assets.get(e.art);
-      this.shadow(ctx, x, 705, 220, 44, e.color);
+      const uiY = spriteTop - 118;
+      this.shadow(ctx, x, 704, 175, 36, e.color);
       ctx.fillStyle = '#fff';
       ctx.font = '900 18px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText(e.name, x, 170);
-      this.panel(ctx, x - 96, 183, 192, 58, e.color, .70);
+      ctx.fillText(e.name, x, uiY);
+      this.panel(ctx, x - 104, uiY + 12, 208, 56, e.color, .76);
       ctx.fillStyle = e.color;
-      ctx.font = '900 16px system-ui';
-      ctx.fillText(`Intent: ${e.intent} ${e.damage}`, x, 218);
+      ctx.font = '900 15px system-ui';
+      ctx.fillText(`Intent: ${e.intent} ${e.damage}`, x, uiY + 47);
+      this.hpBar(ctx, x - 105, uiY + 77, 210, 18, e.hp, e.maxHp, '#ff4767', false);
+      this.drawStatuses(ctx, e, x, uiY + 118);
       if (img) {
         ctx.save();
         ctx.shadowColor = e.color;
-        ctx.shadowBlur = 18;
-        drawContain(ctx, img, x - 150, y, 300, 390);
+        ctx.shadowBlur = 16;
+        drawContain(ctx, img, x - spriteW / 2, spriteTop, spriteW, spriteH);
         ctx.restore();
       } else {
-        this.fallbackUnit(ctx, x, 475, e.color, 'ENEMY');
+        this.fallbackUnit(ctx, x, 495, e.color, 'ENEMY');
       }
-      this.hpBar(ctx, x - 125, 715, 250, 20, e.hp, e.maxHp, '#ff4767');
-      this.drawStatuses(ctx, e, x, 765);
+    });
+  }
+
+  drawPowerBadges(ctx, x, y) {
+    const entries = Object.entries(this.powers || {}).filter(([, v]) => v > 0);
+    entries.slice(0, 5).forEach(([name, value], i) => {
+      const bx = x + i * 104;
+      this.panel(ctx, bx, y, 94, 28, '#ffd86a', .58);
+      ctx.fillStyle = '#ffd86a';
+      ctx.font = '800 11px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${name.split(' ')[0]} ${value}`, bx + 47, y + 14, 86);
     });
   }
 
@@ -782,6 +988,9 @@ export class Game {
     if (card.element === 'fire') return '#ff4b35';
     if (card.element === 'frost') return '#80dfff';
     if (card.element === 'electric') return '#ffe14a';
+    if (card.element === 'water') return '#5fd7ff';
+    if (card.element === 'radiation') return '#cfff42';
+    if (card.element === 'shield') return '#54f8ff';
     if (card.element === 'purple') return '#b164ff';
     if (card.rarity === 'protocol') return '#ffd86a';
     return '#54f8ff';
