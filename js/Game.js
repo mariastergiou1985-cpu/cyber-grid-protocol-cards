@@ -2,6 +2,7 @@ const W = 1600;
 const H = 900;
 const SAVE_KEY = 'cyber-grid-protocol-cards-run-v1';
 const RADIOACTIVE_CLONE_ASSASSIN_ID = 'radioactive_clone_assassin';
+const BRAWLER_WARRIOR_ID = 'brawler_warrior';
 
 const CARD_DB = {
   // Core starter cards
@@ -47,6 +48,26 @@ const CARD_DB = {
   toxic_decay: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Toxic Decay', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'toxin', elementTags: ['toxin', 'clone'], art: 'card_toxic_decay', text: 'Poison cards apply +1 Poison.', power: 'Toxic Decay', powerAmount: 1 },
   half_life: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Half-Life', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'radiation', elementTags: ['radiation', 'clone'], art: 'card_half_life', text: 'Rad Mark cards apply +1 Rad Mark.', power: 'Half-Life', powerAmount: 1 },
   meltdown: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Meltdown', cost: 2, type: 'POWER', rarity: 'rare', element: 'fire', elementTags: ['fire', 'radiation', 'clone'], art: 'card_meltdown', text: 'Attack cards gain +2 damage.', power: 'Meltdown', powerAmount: 1 },
+
+  // Brawler Warrior character cards
+  static_strike: { owner: BRAWLER_WARRIOR_ID, title: 'Static Strike', cost: 1, type: 'ATTACK', rarity: 'common', element: 'electric', elementTags: ['electric', 'brawler'], art: 'card_static_strike', text: 'Deal 7 damage. Apply 1 Shock.', damage: 7, shock: 1 },
+  chilled_blade: { owner: BRAWLER_WARRIOR_ID, title: 'Chilled Blade', cost: 1, type: 'ATTACK', rarity: 'common', element: 'frost', elementTags: ['frost', 'electric', 'brawler'], art: 'card_chilled_blade', text: 'Deal 6 damage. Apply 1 Frost and 1 Shock.', damage: 6, frost: 1, shock: 1 },
+  thunderous_slam: { owner: BRAWLER_WARRIOR_ID, title: 'Thunderous Slam', cost: 2, type: 'ATTACK', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'physical', 'brawler'], art: 'card_thunderous_slam', text: 'Deal 13 damage. Apply 1 Weak.', damage: 13, weak: 1 },
+  superconductive_toss: { owner: BRAWLER_WARRIOR_ID, title: 'Superconductive Toss', cost: 1, type: 'ATTACK', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'frost', 'brawler'], art: 'card_superconductive_toss', text: 'Deal 8 damage. Apply 1 Shock.', damage: 8, shock: 1 },
+  thermal_shock: { owner: BRAWLER_WARRIOR_ID, title: 'Thermal Shock', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'fire', elementTags: ['fire', 'frost', 'brawler'], art: 'card_thermal_shock', text: 'Deal 12 damage. Apply 1 Burn and 1 Frost.', damage: 12, burn: 1, frost: 1 },
+  chain_lightning: { owner: BRAWLER_WARRIOR_ID, title: 'Chain Lightning', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'electric', elementTags: ['electric', 'brawler'], art: 'card_chain_lightning', text: 'Deal 7 to ALL. Apply 1 Shock.', damage: 7, target: 'all', shock: 1 },
+  absolute_zero: { owner: BRAWLER_WARRIOR_ID, title: 'Absolute Zero', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'frost', elementTags: ['frost', 'brawler'], art: 'card_absolute_zero', text: 'Deal 10 damage. Apply 3 Frost.', damage: 10, frost: 3 },
+
+  cryo_shield: { owner: BRAWLER_WARRIOR_ID, title: 'Cryo Shield', cost: 1, type: 'SKILL', rarity: 'common', element: 'frost', elementTags: ['frost', 'shield', 'brawler'], art: 'card_cryo_shield', text: 'Gain 8 Block. Apply 1 Frost.', block: 8, frost: 1 },
+  frost_armor: { owner: BRAWLER_WARRIOR_ID, title: 'Frost Armor', cost: 1, type: 'SKILL', rarity: 'common', element: 'frost', elementTags: ['frost', 'shield', 'brawler'], art: 'card_frost_armor', text: 'Gain 10 Block.', block: 10 },
+  capacitor_charge: { owner: BRAWLER_WARRIOR_ID, title: 'Capacitor Charge', cost: 0, type: 'SKILL', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'brawler'], art: 'card_capacitor_charge', text: 'Gain 1 Energy. Draw 1.', energy: 1, draw: 1 },
+  defibrillate: { owner: BRAWLER_WARRIOR_ID, title: 'Defibrillate', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'shield', 'brawler'], art: 'card_defibrillate', text: 'Gain 5 Block. Draw 1.', block: 5, draw: 1 },
+  frost_and_flash: { owner: BRAWLER_WARRIOR_ID, title: 'Frost and Flash', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'frost', elementTags: ['frost', 'electric', 'brawler'], art: 'card_frost_and_flash', text: 'Gain 6 Block. Apply 1 Frost and 1 Shock.', block: 6, frost: 1, shock: 1 },
+  overload: { owner: BRAWLER_WARRIOR_ID, title: 'Overload', cost: 0, type: 'SKILL', rarity: 'rare', element: 'electric', elementTags: ['electric', 'brawler'], art: 'card_overload', text: 'Gain 2 Energy. Draw 1.', energy: 2, draw: 1 },
+
+  cryo_electric_core: { owner: BRAWLER_WARRIOR_ID, title: 'Cryo-Electric Core', cost: 1, type: 'POWER', rarity: 'rare', element: 'electric', elementTags: ['electric', 'frost', 'brawler'], art: 'card_cryo_electric_core', text: 'Frost/Electric attacks gain +1 damage.', power: 'Cryo-Electric Core', powerAmount: 1 },
+  glacial_aura: { owner: BRAWLER_WARRIOR_ID, title: 'Glacial Aura', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'frost', elementTags: ['frost', 'brawler'], art: 'card_glacial_aura', text: 'Frost cards apply +1 Frost.', power: 'Glacial Aura', powerAmount: 1 },
+  voltage_generator: { owner: BRAWLER_WARRIOR_ID, title: 'Voltage Generator', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'brawler'], art: 'card_voltage_generator', text: 'Electric cards apply +1 Shock.', power: 'Voltage Generator', powerAmount: 1 },
 
   // Oni Cataclysm first-character deck cards
   oni_cleave: { title: 'Oni Cleave', cost: 1, type: 'ATTACK', rarity: 'common', element: 'fire', elementTags: ['fire'], art: 'card_plasma_cut', text: 'Deal 8 damage. Apply 1 Burn.', damage: 8, burn: 1 },
@@ -98,9 +119,9 @@ const CHARACTERS = [
     rewardTheme: ['toxin','radiation','water']
   },
   {
-    id: 'brawler_warrior', name: 'Brawler Warrior', hp: 85, art: 'char_brawler_warrior', color: '#3fffc1',
-    starterDeck: ['neon_slash','neon_slash','shock_blade','grid_guard','grid_guard','water_pulse','guardian_matrix','thunder_oni','frost_strike','overclock'],
-    rewardTheme: ['physical','electric','water','shield']
+    id: BRAWLER_WARRIOR_ID, name: 'Brawler Warrior', hp: 85, art: 'char_brawler_warrior', color: '#3fffc1',
+    starterDeck: ['static_strike','static_strike','static_strike','cryo_shield','cryo_shield','cryo_shield','chilled_blade','capacitor_charge','frost_armor','voltage_generator'],
+    rewardTheme: ['brawler','electric','frost','shield']
   },
   {
     id: RADIOACTIVE_CLONE_ASSASSIN_ID, name: 'Radioactive Clone Assassin', hp: 66, art: 'char_assassin_clone', color: '#cfff42',
@@ -349,7 +370,11 @@ export class Game {
   cardRewardPool() {
     const ch = CHARACTERS[this.selectedCharacterIndex] ?? CHARACTERS[0];
     const theme = new Set(ch.rewardTheme || []);
-    const eligible = Object.keys(CARD_DB).filter(id => !CARD_DB[id].owner || CARD_DB[id].owner === ch.id);
+    const ownerOnly = ch.id === BRAWLER_WARRIOR_ID;
+    const eligible = Object.keys(CARD_DB).filter(id => {
+      const owner = CARD_DB[id].owner;
+      return ownerOnly ? owner === ch.id : !owner || owner === ch.id;
+    });
     const themed = eligible.filter(id => {
       const tags = CARD_DB[id].elementTags || [];
       return tags.some(t => theme.has(t)) || ['protocol','rare'].includes(CARD_DB[id].rarity);
@@ -691,6 +716,7 @@ export class Game {
     if (this.hasRelic('volt_blade_handle') && card.type === 'ATTACK') dmg += 1;
     if (this.hasRelic('plasma_lens') && card.type === 'ATTACK') dmg += 2;
     if (this.powers.Meltdown && card.type === 'ATTACK') dmg += 2 * this.powers.Meltdown;
+    if (this.powers['Cryo-Electric Core'] && card.type === 'ATTACK' && (tags.includes('frost') || tags.includes('electric'))) dmg += this.powers['Cryo-Electric Core'];
     if (this.powers['Demon Reactor'] && (tags.includes('fire') || tags.includes('radiation'))) dmg += 2 * this.powers['Demon Reactor'];
     if (this.powers['Storm Circuit'] && tags.includes('electric')) dmg += this.powers['Storm Circuit'];
     if (target.status?.Shock) dmg += target.status.Shock;
@@ -766,7 +792,9 @@ export class Game {
       let a = amount;
       if (name === 'Burn' && (this.powers['Demon Reactor'] || this.powers['Hellfire Pact'])) a += (this.powers['Demon Reactor'] || 0) + (this.powers['Hellfire Pact'] || 0);
       if (name === 'Shock' && this.powers['Storm Circuit']) a += this.powers['Storm Circuit'];
+      if (name === 'Shock' && this.powers['Voltage Generator']) a += this.powers['Voltage Generator'];
       if (name === 'Frost' && this.powers['Cryo Engine']) a += this.powers['Cryo Engine'];
+      if (name === 'Frost' && this.powers['Glacial Aura']) a += this.powers['Glacial Aura'];
       if (name === 'Poison' && this.powers['Venom Injector']) a += this.powers['Venom Injector'];
       if (name === 'Poison' && this.powers['Toxic Decay']) a += this.powers['Toxic Decay'];
       if (name === 'Poison' && this.hasRelic('toxic_injector')) a += 1;
