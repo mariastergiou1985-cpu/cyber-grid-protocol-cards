@@ -1,6 +1,7 @@
 const W = 1600;
 const H = 900;
 const SAVE_KEY = 'cyber-grid-protocol-cards-run-v1';
+const RADIOACTIVE_CLONE_ASSASSIN_ID = 'radioactive_clone_assassin';
 
 const CARD_DB = {
   // Core starter cards
@@ -22,6 +23,30 @@ const CARD_DB = {
   flame_barrier: { title: 'Flame Barrier', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'fire', elementTags: ['fire'], art: 'card_grid_guard', text: 'Gain 6 Block. Apply 2 Burn.', block: 6, burn: 2 },
   toxic_screen: { title: 'Toxic Screen', cost: 1, type: 'SKILL', rarity: 'common', element: 'toxin', elementTags: ['toxin'], art: 'card_toxin_injection', text: 'Gain 6 Block. Apply 1 Poison to all.', block: 6, poison: 1, target: 'all' },
   ion_pierce: { title: 'Ion Pierce', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'electric', elementTags: ['electric', 'radiation'], art: 'card_shock_blade', text: 'Deal 14 damage. Apply 1 Shock and 1 Rad Mark.', damage: 14, shock: 1, rad: 1 },
+
+  // Radioactive Clone Assassin character cards
+  radioactive_strike: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Radioactive Strike', cost: 1, type: 'ATTACK', rarity: 'common', element: 'radiation', elementTags: ['radiation', 'clone'], art: 'card_radioactive_strike', text: 'Deal 7 damage. Apply 1 Rad Mark.', damage: 7, rad: 1 },
+  twin_clone: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Twin Clone', cost: 1, type: 'ATTACK', rarity: 'common', element: 'cyan', elementTags: ['physical', 'clone'], art: 'card_twin_clone', text: 'Deal 4 damage twice.', damage: 4, hits: 2 },
+  nuclear_blade: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Nuclear Blade', cost: 1, type: 'ATTACK', rarity: 'uncommon', element: 'radiation', elementTags: ['radiation', 'clone'], art: 'card_nuclear_blade', text: 'Deal 9 damage. Apply 1 Vulnerable.', damage: 9, vulnerable: 1 },
+  critical_mass: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Critical Mass', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'radiation', elementTags: ['radiation', 'fire', 'clone'], art: 'card_critical_mass', text: 'Deal 13 damage. Apply 2 Rad Mark.', damage: 13, rad: 2 },
+  isotope_purge: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Isotope Purge', cost: 1, type: 'ATTACK', rarity: 'uncommon', element: 'radiation', elementTags: ['radiation', 'clone'], art: 'card_isotope_purge', text: 'Deal 6 damage. Apply 1 Weak.', damage: 6, weak: 1 },
+  chain_reaction: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Chain Reaction', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'radiation', elementTags: ['radiation', 'electric', 'clone'], art: 'card_chain_reaction', text: 'Deal 8 to ALL. Apply 1 Rad Mark.', damage: 8, target: 'all', rad: 1 },
+  unstable_strike: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Unstable Strike', cost: 0, type: 'ATTACK', rarity: 'uncommon', element: 'radiation', elementTags: ['radiation', 'clone'], art: 'card_unstable_strike', text: 'Lose 2 HP. Deal 6 damage.', selfDamage: 2, damage: 6 },
+
+  lead_shield: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Lead Shield', cost: 1, type: 'SKILL', rarity: 'common', element: 'shield', elementTags: ['shield', 'radiation', 'clone'], art: 'card_lead_shield', text: 'Gain 8 Block.', block: 8 },
+  spawn_clone: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Spawn Clone', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'cyan', elementTags: ['shield', 'clone'], art: 'card_spawn_clone', text: 'Gain 5 Block. Draw 1.', block: 5, draw: 1 },
+  energy_absorb: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Energy Absorb', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'shield', 'clone'], art: 'card_energy_absorb', text: 'Gain 6 Block. Gain 1 Energy.', block: 6, energy: 1 },
+  mirror_image: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Mirror Image', cost: 1, type: 'SKILL', rarity: 'common', element: 'shield', elementTags: ['shield', 'clone'], art: 'card_mirror_image', text: 'Gain 7 Block. Apply 1 Weak.', block: 7, weak: 1 },
+  fallout: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Fallout', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'toxin', elementTags: ['toxin', 'radiation', 'clone'], art: 'card_fallout', text: 'Gain 4 Block. Apply 1 Poison to all.', block: 4, poison: 1, target: 'all' },
+  emergency_clone: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Emergency Clone', cost: 0, type: 'SKILL', rarity: 'rare', element: 'shield', elementTags: ['shield', 'clone'], art: 'card_emergency_clone', text: 'Gain 3 Block. Draw 1.', block: 3, draw: 1 },
+  cell_mutation: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Cell Mutation', cost: 1, type: 'SKILL', rarity: 'common', element: 'toxin', elementTags: ['toxin', 'radiation', 'clone'], art: 'card_cell_mutation', text: 'Gain 5 Block. Draw 1.', block: 5, draw: 1 },
+  irradiate: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Irradiate', cost: 1, type: 'SKILL', rarity: 'common', element: 'radiation', elementTags: ['radiation', 'clone'], art: 'card_irradiate', text: 'Apply 2 Rad Mark to ALL.', rad: 2, target: 'all' },
+
+  pocket_reactor: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Pocket Reactor', cost: 1, type: 'POWER', rarity: 'rare', element: 'electric', elementTags: ['electric', 'radiation', 'clone'], art: 'card_pocket_reactor', text: 'Gain 1 Energy. Draw 1. Add 1 Pocket Reactor.', energy: 1, draw: 1, power: 'Pocket Reactor', powerAmount: 1 },
+  clone_legion: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Clone Legion', cost: 1, type: 'POWER', rarity: 'rare', element: 'cyan', elementTags: ['physical', 'clone'], art: 'card_clone_legion', text: 'Draw 1. Add 1 Clone Legion.', draw: 1, power: 'Clone Legion', powerAmount: 1 },
+  toxic_decay: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Toxic Decay', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'toxin', elementTags: ['toxin', 'clone'], art: 'card_toxic_decay', text: 'Poison cards apply +1 Poison.', power: 'Toxic Decay', powerAmount: 1 },
+  half_life: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Half-Life', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'radiation', elementTags: ['radiation', 'clone'], art: 'card_half_life', text: 'Rad Mark cards apply +1 Rad Mark.', power: 'Half-Life', powerAmount: 1 },
+  meltdown: { owner: RADIOACTIVE_CLONE_ASSASSIN_ID, title: 'Meltdown', cost: 2, type: 'POWER', rarity: 'rare', element: 'fire', elementTags: ['fire', 'radiation', 'clone'], art: 'card_meltdown', text: 'Attack cards gain +2 damage.', power: 'Meltdown', powerAmount: 1 },
 
   // Oni Cataclysm first-character deck cards
   oni_cleave: { title: 'Oni Cleave', cost: 1, type: 'ATTACK', rarity: 'common', element: 'fire', elementTags: ['fire'], art: 'card_plasma_cut', text: 'Deal 8 damage. Apply 1 Burn.', damage: 8, burn: 1 },
@@ -76,6 +101,11 @@ const CHARACTERS = [
     id: 'brawler_warrior', name: 'Brawler Warrior', hp: 85, art: 'char_brawler_warrior', color: '#3fffc1',
     starterDeck: ['neon_slash','neon_slash','shock_blade','grid_guard','grid_guard','water_pulse','guardian_matrix','thunder_oni','frost_strike','overclock'],
     rewardTheme: ['physical','electric','water','shield']
+  },
+  {
+    id: RADIOACTIVE_CLONE_ASSASSIN_ID, name: 'Radioactive Clone Assassin', hp: 66, art: 'char_assassin_clone', color: '#cfff42',
+    starterDeck: ['radioactive_strike','radioactive_strike','radioactive_strike','lead_shield','lead_shield','lead_shield','twin_clone','spawn_clone','irradiate','pocket_reactor'],
+    rewardTheme: ['clone','radiation','toxin','shield','electric']
   }
 ];
 
@@ -319,11 +349,12 @@ export class Game {
   cardRewardPool() {
     const ch = CHARACTERS[this.selectedCharacterIndex] ?? CHARACTERS[0];
     const theme = new Set(ch.rewardTheme || []);
-    const themed = Object.keys(CARD_DB).filter(id => {
+    const eligible = Object.keys(CARD_DB).filter(id => !CARD_DB[id].owner || CARD_DB[id].owner === ch.id);
+    const themed = eligible.filter(id => {
       const tags = CARD_DB[id].elementTags || [];
       return tags.some(t => theme.has(t)) || ['protocol','rare'].includes(CARD_DB[id].rarity);
     });
-    return themed.length >= 3 ? themed : Object.keys(CARD_DB);
+    return themed.length >= 3 ? themed : eligible;
   }
 
   save() {
@@ -659,6 +690,7 @@ export class Game {
     const tags = card.elementTags || [];
     if (this.hasRelic('volt_blade_handle') && card.type === 'ATTACK') dmg += 1;
     if (this.hasRelic('plasma_lens') && card.type === 'ATTACK') dmg += 2;
+    if (this.powers.Meltdown && card.type === 'ATTACK') dmg += 2 * this.powers.Meltdown;
     if (this.powers['Demon Reactor'] && (tags.includes('fire') || tags.includes('radiation'))) dmg += 2 * this.powers['Demon Reactor'];
     if (this.powers['Storm Circuit'] && tags.includes('electric')) dmg += this.powers['Storm Circuit'];
     if (target.status?.Shock) dmg += target.status.Shock;
@@ -736,8 +768,10 @@ export class Game {
       if (name === 'Shock' && this.powers['Storm Circuit']) a += this.powers['Storm Circuit'];
       if (name === 'Frost' && this.powers['Cryo Engine']) a += this.powers['Cryo Engine'];
       if (name === 'Poison' && this.powers['Venom Injector']) a += this.powers['Venom Injector'];
+      if (name === 'Poison' && this.powers['Toxic Decay']) a += this.powers['Toxic Decay'];
       if (name === 'Poison' && this.hasRelic('toxic_injector')) a += 1;
       if (name === 'Rad Mark' && this.powers['Demon Reactor']) a += this.powers['Demon Reactor'];
+      if (name === 'Rad Mark' && this.powers['Half-Life']) a += this.powers['Half-Life'];
       return a;
     };
     const apply = (name, amount) => {
