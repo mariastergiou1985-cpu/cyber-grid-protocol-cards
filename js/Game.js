@@ -92,7 +92,7 @@ const MAP_LAYERS = [
   [{ id: 'n0a', type: 'battle', x: 250, y: 600, next: ['n1a', 'n1b'] }],
   [
     { id: 'n1a', type: 'battle', x: 430, y: 430, next: ['n2a', 'n2b'] },
-    { id: 'n1b', type: 'event', x: 450, y: 690, next: ['n2b', 'n2c'] }
+    { id: 'n1b', type: 'treasure', x: 450, y: 690, next: ['n2b', 'n2c'] }
   ],
   [
     { id: 'n2a', type: 'shop', x: 650, y: 365, next: ['n3a', 'n3b'] },
@@ -118,13 +118,20 @@ const MAP_LAYERS = [
 const MAP_NODES = MAP_LAYERS.flat();
 
 const RELIC_DB = {
-  neural_shard: { name: 'Neural Shard', price: 180, color: '#54f8ff', text: '+1 max Energy during combat.' },
-  void_lens: { name: 'Void Lens', price: 160, color: '#b164ff', text: 'Draw +1 card at combat start.' },
-  ghost_firewall: { name: 'Ghost Firewall', price: 150, color: '#54f8ff', text: 'Start combat with 4 Block.' },
-  plasma_lens: { name: 'Plasma Lens', price: 170, color: '#ff7740', text: '+2 damage on Attack cards.' },
-  toxic_injector: { name: 'Toxic Injector', price: 175, color: '#8cff3f', text: 'Toxin cards apply +1 Poison.' },
-  protocol_crown: { name: 'Protocol Crown', price: 220, color: '#ffd86a', text: 'Gain +15 credits after elite/boss fights.' }
+  emergency_patch: { name: 'Emergency Patch', price: 135, tier: 'common', color: '#54f8ff', art: 'relic_emergency_patch', text: 'Once per combat below 30% HP: gain 8 Block.' },
+  overclock_core: { name: 'Overclock Core', price: 170, tier: 'rare', color: '#ffe14a', art: 'relic_overclock_core', text: 'First non-zero card cost each combat is reduced by 1.' },
+  glitch_lens: { name: 'Glitch Lens', price: 145, tier: 'common', color: '#ff4df0', art: 'relic_glitch_lens', text: 'Secret boss nodes pulse on the map.' },
+  nano_plating: { name: 'Nano Plating', price: 150, tier: 'common', color: '#54f8ff', art: 'relic_nano_plating', text: 'Skill cards grant +1 extra Block.' },
+  volt_blade_handle: { name: 'Volt Blade Handle', price: 160, tier: 'uncommon', color: '#ffe14a', art: 'relic_volt_blade_handle', text: 'Attack cards deal +1 damage.' },
+  memory_cache: { name: 'Memory Cache', price: 150, tier: 'common', color: '#80dfff', art: 'relic_memory_cache', text: 'Draw +1 card on turn 1.' },
+  firewall_charm: { name: 'Firewall Charm', price: 165, tier: 'uncommon', color: '#54f8ff', art: 'relic_firewall_charm', text: 'Reduce first incoming combat damage by 3.' },
+  pulse_reactor: { name: 'Pulse Reactor', price: 180, tier: 'rare', color: '#ffd86a', art: 'relic_pulse_reactor', text: 'After 3 attacks in a turn, gain 1 Energy once.' },
+  ice_protocol: { name: 'Ice Protocol', price: 155, tier: 'uncommon', color: '#80dfff', art: 'relic_ice_protocol', text: 'Every 3rd Skill applies 1 Frost.' },
+  cultist_token: { name: 'Cultist Token', price: 155, tier: 'common', color: '#b164ff', art: 'relic_cultist_token', text: 'Elite victories drop +15 credits.' },
+  vault_key_fragment: { name: 'Vault Key Fragment', price: 190, tier: 'rare', color: '#ffd86a', art: 'relic_vault_key_fragment', text: 'Relic reward rooms offer 1 extra choice.' },
+  phoenix_spark: { name: 'Phoenix Spark', price: 230, tier: 'boss', color: '#ff7740', art: 'relic_phoenix_spark', text: 'Once per run, revive at 25% HP.' }
 };
+const RELIC_IDS = Object.keys(RELIC_DB);
 const UTILITY_DB = {
   nano_repair: { name: 'Nano Repair', price: 80, color: '#8cff3f', text: 'Heal 20 HP.' },
   energy_refill: { name: 'Energy Refill', price: 65, color: '#ffe14a', text: 'Gain +1 max Energy this run.' },
@@ -230,11 +237,16 @@ export class Game {
     this.block = 0;
     this.powers = {};
     this.relics = [];
+    this.relicState = {};
+    this.combatRelicState = {};
     this.playerStatus = {};
     this.elementMemory = new Set();
     this.message = '';
     this.fx = [];
     this.rewardCards = [];
+    this.rewardRelics = [];
+    this.relicRewardSource = null;
+    this.relicRewardStrength = 'standard';
     this.shopCards = [];
     this.shopRelics = [];
     this.shopUtilities = [];
@@ -288,6 +300,8 @@ export class Game {
     this.maxEnergy = base.id === 'oni_cataclysm' ? 3 : 3;
     this.powers = {};
     this.relics = [];
+    this.relicState = {};
+    this.combatRelicState = {};
     this.playerStatus = {};
     this.elementMemory = new Set();
     this.deck = this.getStarterDeck(base);
@@ -325,6 +339,7 @@ export class Game {
       completedNodes: this.completedNodes,
       credits: this.credits,
       relics: this.relics,
+      relicState: this.relicState,
       maxEnergy: this.maxEnergy
     }));
     this.hasSave = true;
@@ -340,7 +355,9 @@ export class Game {
       this.player = { ...copy(base), hp: data.hp ?? base.hp, maxHp: data.maxHp ?? base.hp, block: 0 };
       this.deck = Array.isArray(data.deck) ? data.deck.filter(id => CARD_DB[id]) : this.getStarterDeck(base);
       this.powers = {};
-      this.relics = Array.isArray(data.relics) ? data.relics.filter(id => RELIC_DB[id]) : [];
+      this.relics = this.normalizeRelics(data.relics);
+      this.relicState = data.relicState && typeof data.relicState === 'object' ? data.relicState : {};
+      this.combatRelicState = {};
       this.playerStatus = {};
       this.elementMemory = new Set();
       this.node = data.node ?? 0;
@@ -383,6 +400,17 @@ export class Game {
     this.drawPile = shuffle(this.deck);
     this.discard = [];
     this.hand = [];
+    this.combatRelicState = {
+      turnNumber: 1,
+      cardsPlayedThisCombat: 0,
+      cardsPlayedThisTurn: 0,
+      attacksPlayedThisTurn: 0,
+      skillsPlayedThisCombat: 0,
+      emergencyPatchUsed: false,
+      firewallCharmUsed: false,
+      overclockCoreUsed: false,
+      pulseReactorUsedThisTurn: false
+    };
     this.energy = this.maxEnergy + (this.hasRelic('neural_shard') ? 1 : 0);
     this.block = this.hasRelic('ghost_firewall') ? 4 : 0;
     this.playerStatus = this.playerStatus || {};
@@ -390,7 +418,9 @@ export class Game {
     if (this.selectedTargetIndex < 0) this.selectedTargetIndex = 0;
     this.turn = 'player';
     this.message = kind === 'boss' ? 'Boss protocol detected.' : kind === 'secret' ? 'SECRET BOSS FOUND.' : 'Combat initialized.';
-    this.drawCards(this.hasRelic('void_lens') ? 6 : 5);
+    const openingDraw = 5 + (this.hasRelic('void_lens') ? 1 : 0) + (this.hasRelic('memory_cache') ? 1 : 0);
+    this.drawCards(openingDraw);
+    if (this.hasRelic('memory_cache')) this.floatText(340, 760, 'MEMORY CACHE +1 DRAW', RELIC_DB.memory_cache.color);
     this.state = 'combat';
   }
 
@@ -412,7 +442,128 @@ export class Game {
     return { type: 'attack', label: enemy.intent || 'Attack', value: enemy.damage || 6 };
   }
 
+  normalizeRelics(ids) {
+    if (!Array.isArray(ids)) return [];
+    return [...new Set(ids.filter(id => typeof id === 'string' && id.trim()))];
+  }
+
   hasRelic(id) { return this.relics.includes(id); }
+
+  getRelic(id) {
+    return RELIC_DB[id] || { name: String(id || 'Unknown Relic'), color: '#54f8ff', art: `relic_${id}`, text: 'Legacy relic protocol.' };
+  }
+
+  addRelic(id, announce = true) {
+    if (!id || !RELIC_DB[id] || this.relics.includes(id)) return false;
+    this.relics.push(id);
+    if (announce) this.floatText(800, 650, `${RELIC_DB[id].name} ACQUIRED`, RELIC_DB[id].color);
+    return true;
+  }
+
+  cardCost(card) {
+    const base = Math.max(0, card?.cost || 0);
+    if (this.state === 'combat' && this.hasRelic('overclock_core') && !this.combatRelicState?.overclockCoreUsed && base > 0) return base - 1;
+    return base;
+  }
+
+  relicChoiceCount() {
+    return this.hasRelic('vault_key_fragment') ? 4 : 3;
+  }
+
+  relicRewardPool(strength = 'standard') {
+    const owned = new Set(this.relics);
+    const available = RELIC_IDS.filter(id => !owned.has(id));
+    if (strength !== 'strong') return available;
+    const strong = available.filter(id => ['rare', 'boss'].includes(RELIC_DB[id].tier));
+    const fill = available.filter(id => !strong.includes(id));
+    return [...strong, ...fill];
+  }
+
+  buildRelicChoices(strength = 'standard') {
+    const count = this.relicChoiceCount();
+    const pool = this.relicRewardPool(strength);
+    const primary = strength === 'strong' ? pool.slice(0, Math.max(count, 4)) : pool;
+    return shuffle(primary.length >= count ? primary : pool).slice(0, count);
+  }
+
+  openRelicReward(source, strength = 'standard') {
+    this.relicRewardSource = source;
+    this.relicRewardStrength = strength;
+    this.rewardRelics = this.buildRelicChoices(strength);
+    if (!this.rewardRelics.length) {
+      this.finishRelicReward();
+      return;
+    }
+    this.state = 'relicReward';
+    this.save();
+  }
+
+  finishRelicReward() {
+    this.completeCurrentNode();
+    this.state = this.currentLayer >= MAP_LAYERS.length ? 'victory' : 'map';
+    this.rewardRelics = [];
+    this.relicRewardSource = null;
+    this.save();
+  }
+
+  takeRelicReward(id) {
+    if (id) this.addRelic(id);
+    this.finishRelicReward();
+  }
+
+  resetTurnRelics() {
+    this.combatRelicState.turnNumber = (this.combatRelicState.turnNumber || 1) + 1;
+    this.combatRelicState.cardsPlayedThisTurn = 0;
+    this.combatRelicState.attacksPlayedThisTurn = 0;
+    this.combatRelicState.pulseReactorUsedThisTurn = false;
+  }
+
+  checkEmergencyPatch(prevHp) {
+    if (!this.hasRelic('emergency_patch') || this.combatRelicState?.emergencyPatchUsed || !this.player?.maxHp) return;
+    const threshold = this.player.maxHp * .3;
+    if (prevHp >= threshold && this.player.hp > 0 && this.player.hp < threshold) {
+      this.combatRelicState.emergencyPatchUsed = true;
+      this.block += 8;
+      this.floatText(300, 610, 'EMERGENCY PATCH +8 BLOCK', RELIC_DB.emergency_patch.color);
+    }
+  }
+
+  tryPhoenixRevive() {
+    if (this.player.hp > 0 || !this.hasRelic('phoenix_spark') || this.relicState.phoenixSparkUsed) return false;
+    this.relicState.phoenixSparkUsed = true;
+    this.player.hp = Math.max(1, Math.ceil(this.player.maxHp * .25));
+    this.block = 0;
+    this.floatText(330, 430, 'PHOENIX SPARK REVIVE', RELIC_DB.phoenix_spark.color);
+    return true;
+  }
+
+  losePlayerHp(amount, text, color, minHp = 0) {
+    const loss = Math.max(0, amount || 0);
+    if (!loss || !this.player) return;
+    const prevHp = this.player.hp;
+    this.player.hp = Math.max(minHp, this.player.hp - loss);
+    if (text) this.floatText(270, 425, text, color);
+    this.checkEmergencyPatch(prevHp);
+    if (this.player.hp <= 0) this.tryPhoenixRevive();
+  }
+
+  applyIncomingDamage(total) {
+    let incoming = Math.max(0, total || 0);
+    if (incoming > 0 && this.hasRelic('firewall_charm') && !this.combatRelicState?.firewallCharmUsed) {
+      const reduced = Math.min(3, incoming);
+      incoming -= reduced;
+      this.combatRelicState.firewallCharmUsed = true;
+      this.floatText(300, 510, `FIREWALL -${reduced}`, RELIC_DB.firewall_charm.color);
+    }
+    const absorbed = Math.min(this.block, incoming);
+    const hpLoss = incoming - absorbed;
+    this.block -= absorbed;
+    const prevHp = this.player.hp;
+    this.player.hp -= hpLoss;
+    if (total > 0) this.floatText(270, 455, hpLoss ? `-${hpLoss} HP` : 'BLOCKED', hpLoss ? '#ff4767' : '#54f8ff');
+    this.checkEmergencyPatch(prevHp);
+    if (this.player.hp <= 0) this.tryPhoenixRevive();
+  }
 
   drawCards(n) {
     for (let i = 0; i < n; i++) {
@@ -445,16 +596,23 @@ export class Game {
     if (this.state !== 'combat' || this.turn !== 'player') return;
     const id = this.hand[index];
     const card = CARD_DB[id];
-    if (!card || this.energy < card.cost) return;
-    this.energy -= card.cost;
+    const cost = this.cardCost(card);
+    if (!card || this.energy < cost) return;
+    const discounted = this.hasRelic('overclock_core') && !this.combatRelicState?.overclockCoreUsed && (card.cost || 0) > cost;
+    this.energy -= cost;
+    if (discounted) {
+      this.combatRelicState.overclockCoreUsed = true;
+      this.floatText(330, 720, 'OVERCLOCK CORE -1', RELIC_DB.overclock_core.color);
+    }
     this.hand.splice(index, 1);
     this.discard.push(id);
+    this.combatRelicState.cardsPlayedThisCombat += 1;
+    this.combatRelicState.cardsPlayedThisTurn += 1;
 
     this.registerElements(card);
 
     if (card.selfDamage) {
-      this.player.hp = Math.max(1, this.player.hp - card.selfDamage);
-      this.floatText(285, 430, `-${card.selfDamage} HP`, '#ff4767');
+      this.losePlayerHp(card.selfDamage, `-${card.selfDamage} HP`, '#ff4767', 1);
     }
 
     if (card.power) {
@@ -492,12 +650,14 @@ export class Game {
       });
     }
 
+    this.applyCardRelics(card);
     if (this.enemies.every(e => e.hp <= 0)) this.winCombat();
   }
 
   computeDamage(card, target) {
     let dmg = card.damage || 0;
     const tags = card.elementTags || [];
+    if (this.hasRelic('volt_blade_handle') && card.type === 'ATTACK') dmg += 1;
     if (this.hasRelic('plasma_lens') && card.type === 'ATTACK') dmg += 2;
     if (this.powers['Demon Reactor'] && (tags.includes('fire') || tags.includes('radiation'))) dmg += 2 * this.powers['Demon Reactor'];
     if (this.powers['Storm Circuit'] && tags.includes('electric')) dmg += this.powers['Storm Circuit'];
@@ -513,7 +673,30 @@ export class Game {
     const tags = card.elementTags || [];
     if (block && this.powers['Guardian Matrix']) block += 2 * this.powers['Guardian Matrix'];
     if (block && this.powers['Water Core'] && (tags.includes('water') || tags.includes('frost'))) block += 2 * this.powers['Water Core'];
+    if (card.type === 'SKILL' && this.hasRelic('nano_plating')) block += 1;
     return block;
+  }
+
+  applyCardRelics(card) {
+    if (!card) return;
+    if (card.type === 'ATTACK') {
+      this.combatRelicState.attacksPlayedThisTurn += 1;
+      if (this.hasRelic('pulse_reactor') && this.combatRelicState.attacksPlayedThisTurn >= 3 && !this.combatRelicState.pulseReactorUsedThisTurn) {
+        this.combatRelicState.pulseReactorUsedThisTurn = true;
+        this.energy += 1;
+        this.floatText(320, 720, 'PULSE REACTOR +1 ENERGY', RELIC_DB.pulse_reactor.color);
+      }
+    }
+    if (card.type === 'SKILL') {
+      this.combatRelicState.skillsPlayedThisCombat += 1;
+      if (this.hasRelic('ice_protocol') && this.combatRelicState.skillsPlayedThisCombat % 3 === 0) {
+        const target = this.getSelectedEnemy();
+        if (target?.hp > 0) {
+          this.applyStatus(target, { frost: 1, elementTags: ['frost'] });
+          this.floatText(930, 355, 'ICE PROTOCOL', RELIC_DB.ice_protocol.color);
+        }
+      }
+    }
   }
 
   gainPower(name, amount = 1) {
@@ -584,9 +767,9 @@ export class Game {
     let total = 0;
     if (this.playerStatus?.Poison) {
       const p = this.playerStatus.Poison;
-      this.player.hp -= p;
-      this.floatText(270, 425, `Poison -${p}`, '#8cff3f');
+      this.losePlayerHp(p, `Poison -${p}`, '#8cff3f');
       this.playerStatus.Poison = Math.max(0, p - 1);
+      if (this.player.hp <= 0) { this.state = 'gameover'; return; }
     }
     for (const e of this.enemies) {
       if (e.hp <= 0) continue;
@@ -624,11 +807,7 @@ export class Game {
       if (e.status?.Soaked) e.status.Soaked = Math.max(0, e.status.Soaked - 1);
       e.intentPlan = this.rollEnemyIntent(e, this.currentNodeType);
     }
-    const absorbed = Math.min(this.block, total);
-    const hpLoss = total - absorbed;
-    this.block -= absorbed;
-    this.player.hp -= hpLoss;
-    if (total > 0) this.floatText(270, 455, hpLoss ? `-${hpLoss} HP` : 'BLOCKED', hpLoss ? '#ff4767' : '#54f8ff');
+    this.applyIncomingDamage(total);
     if (this.playerStatus?.Weak) this.playerStatus.Weak = Math.max(0, this.playerStatus.Weak - 1);
     if (this.player.hp <= 0) { this.state = 'gameover'; return; }
     if (this.enemies.every(e => e.hp <= 0)) { this.winCombat(); return; }
@@ -638,13 +817,21 @@ export class Game {
     this.block = this.hasRelic('ghost_firewall') ? 4 : 0;
     this.elementMemory = new Set();
     this.turn = 'player';
+    this.resetTurnRelics();
     this.drawCards(5);
     this.save();
   }
 
   winCombat() {
     const bonus = this.currentNodeType === 'boss' ? 60 : this.currentNodeType === 'secret' ? 55 : this.currentNodeType === 'elite' ? 40 : 25;
-    this.credits += bonus + this.node * 3 + (this.hasRelic('protocol_crown') && ['elite','boss','secret'].includes(this.currentNodeType) ? 15 : 0);
+    const eliteBonus = this.hasRelic('cultist_token') && this.currentNodeType === 'elite' ? 15 : 0;
+    const legacyBonus = this.hasRelic('protocol_crown') && ['elite','boss','secret'].includes(this.currentNodeType) ? 15 : 0;
+    this.credits += bonus + this.node * 3 + eliteBonus + legacyBonus;
+    if (eliteBonus) this.floatText(820, 245, 'CULTIST TOKEN +15 CREDITS', RELIC_DB.cultist_token.color);
+    if (['elite', 'boss', 'secret'].includes(this.currentNodeType)) {
+      this.openRelicReward('combat', this.currentNodeType === 'elite' ? 'standard' : 'strong');
+      return;
+    }
     this.rewardCards = shuffle(this.cardRewardPool()).slice(0, 3);
     this.state = 'reward';
     this.save();
@@ -679,6 +866,7 @@ export class Game {
     this.currentNodeType = nodeType;
     if (nodeType === 'shop') this.openShop();
     else if (nodeType === 'rest') this.state = 'rest';
+    else if (nodeType === 'treasure') this.openRelicReward('treasure', 'standard');
     else if (nodeType === 'event') this.resolveEventNode();
     else this.startCombat(nodeType);
   }
@@ -721,9 +909,9 @@ export class Game {
   }
 
   buyRelic(slot) {
-    if (slot.sold || this.credits < slot.price || this.relics.includes(slot.id)) return;
+    if (!slot || slot.sold || this.credits < slot.price || this.relics.includes(slot.id) || !RELIC_DB[slot.id]) return;
     this.credits -= slot.price;
-    this.relics.push(slot.id);
+    this.addRelic(slot.id, false);
     slot.sold = true;
     this.floatText(800, 780, `${RELIC_DB[slot.id].name} BOUGHT`, RELIC_DB[slot.id].color);
     this.save();
@@ -798,6 +986,8 @@ export class Game {
         case 'menu': this.state = 'menu'; return;
         case 'endTurn': this.endTurn(); return;
         case 'reward': this.takeReward(button.data.id); return;
+        case 'relicReward': this.takeRelicReward(button.data.id); return;
+        case 'skipRelicReward': this.takeRelicReward(null); return;
         case 'skipReward': this.takeReward(null); return;
         case 'node': this.enterNode(button.data.type, button.data.node); return;
         case 'enemyTarget': this.selectedTargetIndex = button.data.index; return;
@@ -834,6 +1024,7 @@ export class Game {
     else if (this.state === 'gallery') this.drawGallery(ctx);
     else if (this.state === 'combat') this.drawCombat(ctx);
     else if (this.state === 'reward') this.drawReward(ctx);
+    else if (this.state === 'relicReward') this.drawRelicReward(ctx);
     else if (this.state === 'map') this.drawMap(ctx);
     else if (this.state === 'shop') this.drawShop(ctx);
     else if (this.state === 'rest') this.drawRest(ctx);
@@ -953,6 +1144,7 @@ export class Game {
       ctx.fillText(`Deck ${this.deck.length}`, 1010, 57);
       ctx.fillStyle = '#ffd86a';
       ctx.fillText(`Relics ${this.relics.length}`, 1150, 57);
+      this.drawRelicTray(ctx, 1265, 41);
     }
   }
 
@@ -1050,6 +1242,48 @@ export class Game {
     });
   }
 
+  drawRelicTray(ctx, x, y) {
+    const ids = this.relics.slice(0, 8);
+    ids.forEach((id, i) => this.drawRelicIcon(ctx, id, x + i * 32, y, 26));
+    if (this.relics.length > ids.length) {
+      ctx.fillStyle = '#ffd86a';
+      ctx.font = '950 12px system-ui';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`+${this.relics.length - ids.length}`, x + ids.length * 32 + 2, y + 13);
+    }
+  }
+
+  drawRelicIcon(ctx, id, x, y, size = 32) {
+    const relic = this.getRelic(id);
+    const img = this.assets?.get?.(relic.art || `relic_${id}`);
+    ctx.save();
+    ctx.shadowColor = relic.color;
+    ctx.shadowBlur = size > 40 ? 16 : 8;
+    roundRect(ctx, x, y, size, size, Math.max(6, size * .18));
+    ctx.fillStyle = 'rgba(2,9,18,.92)';
+    ctx.fill();
+    ctx.strokeStyle = relic.color;
+    ctx.lineWidth = size > 40 ? 2 : 1.2;
+    ctx.stroke();
+    if (img) {
+      ctx.save();
+      roundRect(ctx, x + 3, y + 3, size - 6, size - 6, Math.max(5, size * .15));
+      ctx.clip();
+      drawContain(ctx, img, x + 4, y + 4, size - 8, size - 8);
+      ctx.restore();
+    } else {
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = relic.color;
+      ctx.font = `950 ${Math.max(9, Math.round(size * .34))}px system-ui`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const initials = relic.name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      ctx.fillText(initials || '?', x + size / 2, y + size / 2);
+    }
+    ctx.restore();
+  }
+
   drawCombatUi(ctx) {
     this.panel(ctx, 34, 776, 1532, 98, '#54f8ff', .52);
     this.energyOrb(ctx, 92, 828, 48);
@@ -1066,12 +1300,14 @@ export class Game {
       const yBase = 674;
       const hot = this.mouse.x >= x && this.mouse.x <= x + cardW && this.mouse.y >= yBase - 30 && this.mouse.y <= yBase + cardH;
       const y = hot ? yBase - 24 : yBase;
-      this.drawCard(ctx, id, x, y, cardW, cardH, this.energy >= (CARD_DB[id]?.cost ?? 99), hot);
+      const card = CARD_DB[id];
+      const cost = this.cardCost(card);
+      this.drawCard(ctx, id, x, y, cardW, cardH, this.energy >= cost, hot, cost);
       this.cardRects.push({ index: i, x, y, w: cardW, h: cardH });
     });
   }
 
-  drawCard(ctx, id, x, y, w, h, playable = true, hot = false) {
+  drawCard(ctx, id, x, y, w, h, playable = true, hot = false, displayCost = null) {
     const card = CARD_DB[id];
     if (!card) return;
     const accent = this.cardColor(card);
@@ -1107,7 +1343,7 @@ export class Game {
     ctx.font = '950 24px system-ui';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(card.cost, x + 27, y + 27);
+    ctx.fillText(displayCost ?? card.cost, x + 27, y + 27);
     ctx.font = '950 14px Georgia';
     ctx.fillText(card.title, x + w / 2 + 12, y + 24, w - 62);
     roundRect(ctx, x + 34, y + 130, w - 68, 23, 7);
@@ -1138,6 +1374,65 @@ export class Game {
       this.buttons.push(new Button('reward', x, 240, 220, 330, id, { id }, this.cardColor(CARD_DB[id])));
     });
     this.button(ctx, 'skipReward', 680, 650, 240, 62, 'SKIP', '#ff4df0');
+  }
+
+  drawRelicReward(ctx) {
+    const strong = this.relicRewardStrength === 'strong';
+    this.drawBackground(ctx, strong ? 'combat_toxic_factory' : 'map_data_vault', 'RELIC');
+    this.drawTopHud(ctx);
+    ctx.fillStyle = strong ? '#ffd86a' : '#54f8ff';
+    ctx.font = '950 44px system-ui';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = strong ? '#ffd86a' : '#54f8ff';
+    ctx.shadowBlur = 22;
+    ctx.fillText(strong ? 'CLAIM A PRIME RELIC' : 'CHOOSE A RELIC', W / 2, 145);
+    ctx.shadowBlur = 0;
+    const choices = this.rewardRelics.filter(id => RELIC_DB[id] && !this.relics.includes(id));
+    if (!choices.length) {
+      ctx.fillStyle = '#e8fdff';
+      ctx.font = '900 24px system-ui';
+      ctx.fillText('No new relic protocols available.', W / 2, 335);
+      this.button(ctx, 'skipRelicReward', 675, 430, 250, 64, 'CONTINUE', '#54f8ff');
+      return;
+    }
+    const cardW = choices.length >= 4 ? 245 : 270;
+    const cardH = 315;
+    const gap = choices.length >= 4 ? 26 : 40;
+    const total = choices.length * cardW + Math.max(0, choices.length - 1) * gap;
+    const start = W / 2 - total / 2;
+    choices.forEach((id, i) => {
+      const x = start + i * (cardW + gap);
+      const y = 250;
+      const hot = this.mouse.x >= x && this.mouse.x <= x + cardW && this.mouse.y >= y && this.mouse.y <= y + cardH;
+      this.drawRelicChoice(ctx, id, x, hot ? y - 14 : y, cardW, cardH, hot);
+      this.buttons.push(new Button('relicReward', x, y - 18, cardW, cardH + 30, id, { id }, RELIC_DB[id].color));
+    });
+  }
+
+  drawRelicChoice(ctx, id, x, y, w, h, hot = false) {
+    const relic = this.getRelic(id);
+    ctx.save();
+    ctx.shadowColor = relic.color;
+    ctx.shadowBlur = hot ? 30 : 14;
+    roundRect(ctx, x, y, w, h, 18);
+    ctx.fillStyle = 'rgba(3,9,18,.92)';
+    ctx.fill();
+    ctx.strokeStyle = relic.color;
+    ctx.lineWidth = hot ? 3 : 1.6;
+    ctx.stroke();
+    this.drawRelicIcon(ctx, id, x + w / 2 - 46, y + 34, 92);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fff';
+    ctx.font = '950 20px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(relic.name, x + w / 2, y + 158, w - 28);
+    ctx.fillStyle = relic.color;
+    ctx.font = '950 13px system-ui';
+    ctx.fillText((relic.tier || 'legacy').toUpperCase(), x + w / 2, y + 188);
+    ctx.fillStyle = '#e8fdff';
+    ctx.font = '800 14px system-ui';
+    this.wrapText(ctx, relic.text, x + w / 2, y + 226, w - 34, 19, 4);
+    ctx.restore();
   }
 
   drawMap(ctx) {
@@ -1172,27 +1467,28 @@ export class Game {
     ctx.font = '900 16px system-ui';
     ctx.textAlign = 'center';
     ctx.fillText('Choose any glowing node.', 1390, 170);
-    ctx.fillText('Secret boss nodes are optional.', 1390, 205);
+    ctx.fillText(this.hasRelic('glitch_lens') ? 'Glitch Lens: secret route pinged.' : 'Secret boss nodes are optional.', 1390, 205);
     ctx.fillStyle = '#ffd86a';
     ctx.fillText(`${this.credits} run credits`, 1390, 240);
     this.button(ctx, 'menu', 1330, 812, 210, 54, 'MENU', '#54f8ff');
   }
 
   drawNode(ctx, p) {
-    const color = p.type === 'boss' ? '#ff315e' : p.type === 'secret' ? '#ff4df0' : p.type === 'shop' ? '#ffd86a' : p.type === 'rest' ? '#8cff3f' : p.type === 'elite' ? '#ff4df0' : p.type === 'event' ? '#80dfff' : '#54f8ff';
+    const color = p.type === 'boss' ? '#ff315e' : p.type === 'secret' ? '#ff4df0' : p.type === 'shop' ? '#ffd86a' : p.type === 'treasure' ? '#ffd86a' : p.type === 'rest' ? '#8cff3f' : p.type === 'elite' ? '#ff4df0' : p.type === 'event' ? '#80dfff' : '#54f8ff';
     const active = this.availableNodes.includes(p.id);
     const done = this.completedNodes.includes(p.id);
     const locked = !active && !done;
-    const icon = { battle: '⚔', elite: '☠', rest: '✚', shop: '◈', event: '?', boss: '☢', secret: '☣' }[p.type] || '?';
+    const lensHint = p.type === 'secret' && this.hasRelic('glitch_lens') && !done;
+    const icon = { battle: '⚔', elite: '☠', rest: '✚', shop: '◈', treasure: 'R', event: '?', boss: '☢', secret: '☣' }[p.type] || '?';
     ctx.save();
-    ctx.globalAlpha = done ? .42 : locked ? .34 : 1;
+    ctx.globalAlpha = done ? .42 : locked && !lensHint ? .34 : 1;
     ctx.shadowColor = color;
-    ctx.shadowBlur = active ? 30 : 12;
+    ctx.shadowBlur = active ? 30 : lensHint ? 24 : 12;
     roundRect(ctx, p.x - 44, p.y - 44, 88, 88, 22);
     ctx.fillStyle = 'rgba(3,8,18,.88)';
     ctx.fill();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = active ? 4 : 2;
+    ctx.strokeStyle = lensHint && !active ? '#ffd86a' : color;
+    ctx.lineWidth = active || lensHint ? 4 : 2;
     ctx.stroke();
     ctx.fillStyle = color;
     ctx.font = '950 31px system-ui';
@@ -1201,7 +1497,7 @@ export class Game {
     ctx.fillText(done ? '✓' : icon, p.x, p.y - 2);
     ctx.fillStyle = '#fff';
     ctx.font = '950 12px system-ui';
-    ctx.fillText(p.type === 'secret' ? 'SECRET' : p.type.toUpperCase(), p.x, p.y + 63);
+    ctx.fillText(lensHint && !active ? 'PING' : p.type === 'secret' ? 'SECRET' : p.type.toUpperCase(), p.x, p.y + 63);
     ctx.restore();
     if (active) this.buttons.push(new Button('node', p.x - 56, p.y - 56, 112, 132, p.type, { type: p.type, node: p }, color));
   }

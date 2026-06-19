@@ -25,7 +25,20 @@ export const ASSET_MANIFEST = {
   enemy_neon_cultist: './assets/enemies/neon_cultist.png',
   enemy_glitch_raven: './assets/enemies/glitch_raven.png',
   enemy_scrap_reaper: './assets/enemies/scrap_reaper.png',
-  enemy_corrupted_sentinel: './assets/enemies/corrupted_sentinel.png'
+  enemy_corrupted_sentinel: './assets/enemies/corrupted_sentinel.png',
+
+  relic_emergency_patch: './assets/relics/emergency_patch.png',
+  relic_overclock_core: './assets/relics/overclock_core.png',
+  relic_glitch_lens: './assets/relics/glitch_lens.png',
+  relic_nano_plating: './assets/relics/nano_plating.png',
+  relic_volt_blade_handle: './assets/relics/volt_blade_handle.png',
+  relic_memory_cache: './assets/relics/memory_cache.png',
+  relic_firewall_charm: './assets/relics/firewall_charm.png',
+  relic_pulse_reactor: './assets/relics/pulse_reactor.png',
+  relic_ice_protocol: './assets/relics/ice_protocol.png',
+  relic_cultist_token: './assets/relics/cultist_token.png',
+  relic_vault_key_fragment: './assets/relics/vault_key_fragment.png',
+  relic_phoenix_spark: './assets/relics/phoenix_spark.png'
 };
 
 export class AssetLoader {
