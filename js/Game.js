@@ -3,6 +3,7 @@ const H = 900;
 const SAVE_KEY = 'cyber-grid-protocol-cards-run-v1';
 const RADIOACTIVE_CLONE_ASSASSIN_ID = 'radioactive_clone_assassin';
 const BRAWLER_WARRIOR_ID = 'brawler_warrior';
+const TAEKWONDO_FIGHTER_ID = 'taekwondo_fighter';
 
 const CARD_DB = {
   // Core starter cards
@@ -69,6 +70,30 @@ const CARD_DB = {
   glacial_aura: { owner: BRAWLER_WARRIOR_ID, title: 'Glacial Aura', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'frost', elementTags: ['frost', 'brawler'], art: 'card_glacial_aura', text: 'Frost cards apply +1 Frost.', power: 'Glacial Aura', powerAmount: 1 },
   voltage_generator: { owner: BRAWLER_WARRIOR_ID, title: 'Voltage Generator', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'brawler'], art: 'card_voltage_generator', text: 'Electric cards apply +1 Shock.', power: 'Voltage Generator', powerAmount: 1 },
 
+  // Taekwondo Fighter character cards
+  cyber_kick: { owner: TAEKWONDO_FIGHTER_ID, title: 'Cyber Kick', cost: 1, type: 'ATTACK', rarity: 'common', element: 'electric', elementTags: ['electric', 'physical', 'taekwondo'], art: 'card_cyber_kick', text: 'Deal 7 damage. Apply 1 Shock.', damage: 7, shock: 1 },
+  rapid_jabs: { owner: TAEKWONDO_FIGHTER_ID, title: 'Rapid Jabs', cost: 1, type: 'ATTACK', rarity: 'common', element: 'cyan', elementTags: ['physical', 'taekwondo'], art: 'card_rapid_jabs', text: 'Deal 3 damage three times.', damage: 3, hits: 3 },
+  axe_kick: { owner: TAEKWONDO_FIGHTER_ID, title: 'Axe Kick', cost: 1, type: 'ATTACK', rarity: 'common', element: 'cyan', elementTags: ['physical', 'taekwondo'], art: 'card_axe_kick', text: 'Deal 9 damage. Apply 1 Vulnerable.', damage: 9, vulnerable: 1 },
+  sweep_kick: { owner: TAEKWONDO_FIGHTER_ID, title: 'Sweep Kick', cost: 1, type: 'ATTACK', rarity: 'common', element: 'water', elementTags: ['physical', 'water', 'taekwondo'], art: 'card_sweep_kick', text: 'Deal 6 damage. Apply 1 Weak.', damage: 6, weak: 1 },
+  spinning_heel_kick: { owner: TAEKWONDO_FIGHTER_ID, title: 'Spinning Heel Kick', cost: 2, type: 'ATTACK', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'physical', 'taekwondo'], art: 'card_spinning_heel_kick', text: 'Deal 14 damage. Apply 1 Shock.', damage: 14, shock: 1 },
+  shockwave_strike: { owner: TAEKWONDO_FIGHTER_ID, title: 'Shockwave Strike', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'electric', elementTags: ['electric', 'taekwondo'], art: 'card_shockwave_strike', text: 'Deal 8 to ALL. Apply 1 Shock.', damage: 8, target: 'all', shock: 1 },
+  finisher_lightning_drive: { owner: TAEKWONDO_FIGHTER_ID, title: 'Finisher Lightning Drive', cost: 2, type: 'ATTACK', rarity: 'rare', element: 'electric', elementTags: ['electric', 'physical', 'taekwondo'], art: 'card_finisher_lightning_drive', text: 'Deal 16 damage. Apply 2 Shock.', damage: 16, shock: 2 },
+
+  iron_guard: { owner: TAEKWONDO_FIGHTER_ID, title: 'Iron Guard', cost: 1, type: 'SKILL', rarity: 'common', element: 'shield', elementTags: ['shield', 'taekwondo'], art: 'card_iron_guard', text: 'Gain 8 Block.', block: 8 },
+  evasive_step: { owner: TAEKWONDO_FIGHTER_ID, title: 'Evasive Step', cost: 0, type: 'SKILL', rarity: 'common', element: 'cyan', elementTags: ['shield', 'taekwondo'], art: 'card_evasive_step', text: 'Gain 4 Block. Draw 1.', block: 4, draw: 1 },
+  focus_energy: { owner: TAEKWONDO_FIGHTER_ID, title: 'Focus Energy', cost: 0, type: 'SKILL', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'taekwondo'], art: 'card_focus_energy', text: 'Gain 1 Energy. Draw 1.', energy: 1, draw: 1 },
+  cloud_walk: { owner: TAEKWONDO_FIGHTER_ID, title: 'Cloud Walk', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'water', elementTags: ['water', 'shield', 'taekwondo'], art: 'card_cloud_walk', text: 'Gain 6 Block. Draw 1.', block: 6, draw: 1 },
+  perfect_balance: { owner: TAEKWONDO_FIGHTER_ID, title: 'Perfect Balance', cost: 1, type: 'SKILL', rarity: 'common', element: 'shield', elementTags: ['shield', 'taekwondo'], art: 'card_perfect_balance', text: 'Gain 7 Block. Gain 1 Energy.', block: 7, energy: 1 },
+  combat_rhythm: { owner: TAEKWONDO_FIGHTER_ID, title: 'Combat Rhythm', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'cyan', elementTags: ['physical', 'taekwondo'], art: 'card_combat_rhythm', text: 'Gain 3 Block. Draw 2.', block: 3, draw: 2 },
+  kinetic_deflection: { owner: TAEKWONDO_FIGHTER_ID, title: 'Kinetic Deflection', cost: 1, type: 'SKILL', rarity: 'uncommon', element: 'shield', elementTags: ['shield', 'physical', 'taekwondo'], art: 'card_kinetic_deflection', text: 'Gain 9 Block. Apply 1 Weak.', block: 9, weak: 1 },
+  chakra_shield: { owner: TAEKWONDO_FIGHTER_ID, title: 'Chakra Shield', cost: 2, type: 'SKILL', rarity: 'rare', element: 'shield', elementTags: ['shield', 'taekwondo'], art: 'card_chakra_shield', text: 'Gain 14 Block. Draw 1.', block: 14, draw: 1 },
+
+  endless_flow: { owner: TAEKWONDO_FIGHTER_ID, title: 'Endless Flow', cost: 1, type: 'POWER', rarity: 'rare', element: 'water', elementTags: ['water', 'taekwondo'], art: 'card_endless_flow', text: 'Every 3rd card each turn draws 1.', power: 'Endless Flow', powerAmount: 1 },
+  kinetic_battery: { owner: TAEKWONDO_FIGHTER_ID, title: 'Kinetic Battery', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'electric', elementTags: ['electric', 'taekwondo'], art: 'card_kinetic_battery', text: 'Energy cards gain +1 Energy.', power: 'Kinetic Battery', powerAmount: 1 },
+  combo_mastery: { owner: TAEKWONDO_FIGHTER_ID, title: 'Combo Mastery', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'cyan', elementTags: ['physical', 'taekwondo'], art: 'card_combo_mastery', text: 'Attack cards gain +1 damage.', power: 'Combo Mastery', powerAmount: 1 },
+  hyper_reflexes: { owner: TAEKWONDO_FIGHTER_ID, title: 'Hyper Reflexes', cost: 1, type: 'POWER', rarity: 'uncommon', element: 'shield', elementTags: ['shield', 'taekwondo'], art: 'card_hyper_reflexes', text: 'Skill cards gain +1 Block.', power: 'Hyper Reflexes', powerAmount: 1 },
+  zen_state: { owner: TAEKWONDO_FIGHTER_ID, title: 'Zen State', cost: 1, type: 'POWER', rarity: 'rare', element: 'water', elementTags: ['water', 'taekwondo'], art: 'card_zen_state', text: 'Taekwondo cards gain +1 damage or Block.', power: 'Zen State', powerAmount: 1 },
+
   // Oni Cataclysm first-character deck cards
   oni_cleave: { title: 'Oni Cleave', cost: 1, type: 'ATTACK', rarity: 'common', element: 'fire', elementTags: ['fire'], art: 'card_plasma_cut', text: 'Deal 8 damage. Apply 1 Burn.', damage: 8, burn: 1 },
   burning_aegis: { title: 'Burning Aegis', cost: 1, type: 'SKILL', rarity: 'common', element: 'fire', elementTags: ['fire'], art: 'card_grid_guard', text: 'Gain 9 Block. Apply 1 Burn.', block: 9, burn: 1 },
@@ -104,9 +129,9 @@ const CHARACTERS = [
     rewardTheme: ['electric','radiation','shield']
   },
   {
-    id: 'taekwondo_fighter', name: 'Taekwondo Fighter', hp: 70, art: 'char_taekwondo_fighter', color: '#42f6ff',
-    starterDeck: ['frost_strike','frost_strike','grid_guard','grid_guard','cryo_guard','voltage_step','shock_blade','water_pulse','protocol_spark','overclock'],
-    rewardTheme: ['frost','water','electric']
+    id: TAEKWONDO_FIGHTER_ID, name: 'Taekwondo Fighter', hp: 70, art: 'char_taekwondo_fighter', color: '#42f6ff',
+    starterDeck: ['cyber_kick','cyber_kick','cyber_kick','iron_guard','iron_guard','iron_guard','rapid_jabs','evasive_step','focus_energy','perfect_balance'],
+    rewardTheme: ['taekwondo','physical','electric','shield','water']
   },
   {
     id: 'oni_cataclysm', name: 'Oni Cataclysm', hp: 92, art: 'char_oni_cataclysm', color: '#ff315e',
@@ -370,7 +395,7 @@ export class Game {
   cardRewardPool() {
     const ch = CHARACTERS[this.selectedCharacterIndex] ?? CHARACTERS[0];
     const theme = new Set(ch.rewardTheme || []);
-    const ownerOnly = ch.id === BRAWLER_WARRIOR_ID;
+    const ownerOnly = [BRAWLER_WARRIOR_ID, TAEKWONDO_FIGHTER_ID].includes(ch.id);
     const eligible = Object.keys(CARD_DB).filter(id => {
       const owner = CARD_DB[id].owner;
       return ownerOnly ? owner === ch.id : !owner || owner === ch.id;
@@ -683,8 +708,9 @@ export class Game {
     }
 
     if (card.energy) {
-      this.energy += card.energy + (this.powers.Overclock || 0);
-      this.floatText(300, 715, `+${card.energy + (this.powers.Overclock || 0)} ENERGY`, '#ffd86a');
+      const energyGain = card.energy + (this.powers.Overclock || 0) + (this.powers['Kinetic Battery'] && (card.elementTags || []).includes('taekwondo') ? this.powers['Kinetic Battery'] : 0);
+      this.energy += energyGain;
+      this.floatText(300, 715, `+${energyGain} ENERGY`, '#ffd86a');
     }
     if (card.draw) this.drawCards(card.draw);
 
@@ -717,6 +743,8 @@ export class Game {
     if (this.hasRelic('plasma_lens') && card.type === 'ATTACK') dmg += 2;
     if (this.powers.Meltdown && card.type === 'ATTACK') dmg += 2 * this.powers.Meltdown;
     if (this.powers['Cryo-Electric Core'] && card.type === 'ATTACK' && (tags.includes('frost') || tags.includes('electric'))) dmg += this.powers['Cryo-Electric Core'];
+    if (this.powers['Combo Mastery'] && card.type === 'ATTACK') dmg += this.powers['Combo Mastery'];
+    if (this.powers['Zen State'] && card.type === 'ATTACK' && tags.includes('taekwondo')) dmg += this.powers['Zen State'];
     if (this.powers['Demon Reactor'] && (tags.includes('fire') || tags.includes('radiation'))) dmg += 2 * this.powers['Demon Reactor'];
     if (this.powers['Storm Circuit'] && tags.includes('electric')) dmg += this.powers['Storm Circuit'];
     if (target.status?.Shock) dmg += target.status.Shock;
@@ -731,6 +759,8 @@ export class Game {
     const tags = card.elementTags || [];
     if (block && this.powers['Guardian Matrix']) block += 2 * this.powers['Guardian Matrix'];
     if (block && this.powers['Water Core'] && (tags.includes('water') || tags.includes('frost'))) block += 2 * this.powers['Water Core'];
+    if (block && this.powers['Hyper Reflexes'] && card.type === 'SKILL') block += this.powers['Hyper Reflexes'];
+    if (block && this.powers['Zen State'] && (card.elementTags || []).includes('taekwondo')) block += this.powers['Zen State'];
     if (card.type === 'SKILL' && this.hasRelic('nano_plating')) block += 1;
     return block;
   }
@@ -754,6 +784,10 @@ export class Game {
           this.floatText(930, 355, 'ICE PROTOCOL', RELIC_DB.ice_protocol.color);
         }
       }
+    }
+    if (this.powers['Endless Flow'] && this.combatRelicState.cardsPlayedThisTurn > 0 && this.combatRelicState.cardsPlayedThisTurn % 3 === 0) {
+      this.drawCards(this.powers['Endless Flow']);
+      this.floatText(330, 745, 'ENDLESS FLOW +1 DRAW', '#5fd7ff');
     }
   }
 
