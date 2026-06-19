@@ -4,6 +4,8 @@ const SAVE_KEY = 'cyber-grid-protocol-cards-run-v1';
 const RADIOACTIVE_CLONE_ASSASSIN_ID = 'radioactive_clone_assassin';
 const BRAWLER_WARRIOR_ID = 'brawler_warrior';
 const TAEKWONDO_FIGHTER_ID = 'taekwondo_fighter';
+const SKELETON_VANGUARD_ID = 'skeleton_vanguard';
+const CYBER_ARM_HERO_ID = 'cyber_arm_hero';
 
 const CARD_DB = {
   // Core starter cards
@@ -114,7 +116,7 @@ const CARD_DB = {
 
 const CHARACTERS = [
   {
-    id: 'skeleton_vanguard', name: 'Neon Skeleton Vanguard', hp: 75, art: 'char_skeleton_vanguard', color: '#54f8ff',
+    id: SKELETON_VANGUARD_ID, name: 'Neon Skeleton Vanguard', hp: 75, art: 'char_skeleton_vanguard', color: '#54f8ff', startingRelicId: 'priests_coffin',
     starterDeck: ['neon_slash','neon_slash','neon_slash','grid_guard','grid_guard','grid_guard','protocol_spark','shock_blade','frost_strike','overclock'],
     rewardTheme: ['physical','electric','frost','shield']
   },
@@ -124,12 +126,12 @@ const CHARACTERS = [
     rewardTheme: ['toxin','electric','purple']
   },
   {
-    id: 'cyber_arm_hero', name: 'Cyber Arm Hero', hp: 82, art: 'char_cyber_arm_hero', color: '#ff9f2f',
+    id: CYBER_ARM_HERO_ID, name: 'Cyber Arm Hero', hp: 82, art: 'char_cyber_arm_hero', color: '#ff9f2f', startingRelicId: 'release_valve',
     starterDeck: ['shock_blade','shock_blade','grid_guard','grid_guard','protocol_spark','ion_pierce','guardian_matrix','overclock','neon_slash','rad_lance'],
     rewardTheme: ['electric','radiation','shield']
   },
   {
-    id: TAEKWONDO_FIGHTER_ID, name: 'Taekwondo Fighter', hp: 70, art: 'char_taekwondo_fighter', color: '#42f6ff',
+    id: TAEKWONDO_FIGHTER_ID, name: 'Taekwondo Fighter', hp: 70, art: 'char_taekwondo_fighter', color: '#42f6ff', startingRelicId: 'cyber_black_belt',
     starterDeck: ['cyber_kick','cyber_kick','cyber_kick','iron_guard','iron_guard','iron_guard','rapid_jabs','evasive_step','focus_energy','perfect_balance'],
     rewardTheme: ['taekwondo','physical','electric','shield','water']
   },
@@ -144,12 +146,12 @@ const CHARACTERS = [
     rewardTheme: ['toxin','radiation','water']
   },
   {
-    id: BRAWLER_WARRIOR_ID, name: 'Brawler Warrior', hp: 85, art: 'char_brawler_warrior', color: '#3fffc1',
+    id: BRAWLER_WARRIOR_ID, name: 'Brawler Warrior', hp: 85, art: 'char_brawler_warrior', color: '#3fffc1', startingRelicId: 'superconductive_crystal',
     starterDeck: ['static_strike','static_strike','static_strike','cryo_shield','cryo_shield','cryo_shield','chilled_blade','capacitor_charge','frost_armor','voltage_generator'],
     rewardTheme: ['brawler','electric','frost','shield']
   },
   {
-    id: RADIOACTIVE_CLONE_ASSASSIN_ID, name: 'Radioactive Clone Assassin', hp: 66, art: 'char_assassin_clone', color: '#cfff42',
+    id: RADIOACTIVE_CLONE_ASSASSIN_ID, name: 'Radioactive Clone Assassin', hp: 66, art: 'char_assassin_clone', color: '#cfff42', startingRelicId: 'nuclear_core',
     starterDeck: ['radioactive_strike','radioactive_strike','radioactive_strike','lead_shield','lead_shield','lead_shield','twin_clone','spawn_clone','irradiate','pocket_reactor'],
     rewardTheme: ['clone','radiation','toxin','shield','electric']
   }
@@ -205,7 +207,12 @@ const RELIC_DB = {
   ice_protocol: { name: 'Ice Protocol', price: 155, tier: 'uncommon', color: '#80dfff', art: 'relic_ice_protocol', text: 'Every 3rd Skill applies 1 Frost.' },
   cultist_token: { name: 'Cultist Token', price: 155, tier: 'common', color: '#b164ff', art: 'relic_cultist_token', text: 'Elite victories drop +15 credits.' },
   vault_key_fragment: { name: 'Vault Key Fragment', price: 190, tier: 'rare', color: '#ffd86a', art: 'relic_vault_key_fragment', text: 'Relic reward rooms offer 1 extra choice.' },
-  phoenix_spark: { name: 'Phoenix Spark', price: 230, tier: 'boss', color: '#ff7740', art: 'relic_phoenix_spark', text: 'Once per run, revive at 25% HP.' }
+  phoenix_spark: { name: 'Phoenix Spark', price: 230, tier: 'boss', color: '#ff7740', art: 'relic_phoenix_spark', text: 'Once per run, revive at 25% HP.' },
+  nuclear_core: { name: 'Nuclear Core', price: 0, tier: 'starting', starting: true, color: '#cfff42', art: 'starting_nuclear_core', text: 'Start each combat with 1 Clone and 6 clone-block.' },
+  superconductive_crystal: { name: 'Superconductive Crystal', price: 0, tier: 'starting', starting: true, color: '#80dfff', art: 'starting_superconductive_crystal', text: 'First turn: enemies start with 2 Frostbite and 2 Shock.' },
+  priests_coffin: { name: "Priest's Coffin", price: 0, tier: 'starting', starting: true, color: '#b164ff', art: 'starting_priests_coffin', text: 'Exhausting a card grants 3 Bone Shield.' },
+  release_valve: { name: 'Release Valve', price: 0, tier: 'starting', starting: true, color: '#ff9f2f', art: 'starting_release_valve', text: 'At max Overheat, the next Attack deals +50% damage.' },
+  cyber_black_belt: { name: 'Cyber Black Belt', price: 0, tier: 'starting', starting: true, color: '#42f6ff', art: 'starting_cyber_black_belt', text: 'Start combat with 2 Flow. Stance changes draw 1.' }
 };
 const RELIC_IDS = Object.keys(RELIC_DB);
 const UTILITY_DB = {
@@ -311,6 +318,16 @@ export class Game {
     this.selectedTargetIndex = 0;
     this.credits = 50;
     this.block = 0;
+    this.cloneCount = 0;
+    this.cloneBlock = 0;
+    this.boneShield = 0;
+    this.flow = 0;
+    this.stance = null;
+    this.stanceDrawLock = false;
+    this.overheat = 0;
+    this.maxOverheat = 10;
+    this.releaseValveAttackBoost = false;
+    this.currentAttackDamageMultiplier = 1;
     this.powers = {};
     this.relics = [];
     this.relicState = {};
@@ -378,6 +395,7 @@ export class Game {
     this.relics = [];
     this.relicState = {};
     this.combatRelicState = {};
+    this.ensureStartingRelic(base);
     this.playerStatus = {};
     this.elementMemory = new Set();
     this.deck = this.getStarterDeck(base);
@@ -438,6 +456,7 @@ export class Game {
       this.powers = {};
       this.relics = this.normalizeRelics(data.relics);
       this.relicState = data.relicState && typeof data.relicState === 'object' ? data.relicState : {};
+      this.ensureStartingRelic(base);
       this.combatRelicState = {};
       this.playerStatus = {};
       this.elementMemory = new Set();
@@ -448,6 +467,7 @@ export class Game {
       this.maxEnergy = data.maxEnergy ?? this.maxEnergy ?? 3;
       this.credits = data.credits ?? 50;
       this.state = 'map';
+      this.save();
     } catch (err) {
       console.warn('[save] invalid save', err);
       this.newRun();
@@ -492,6 +512,7 @@ export class Game {
       overclockCoreUsed: false,
       pulseReactorUsedThisTurn: false
     };
+    this.resetStartingRelicCombatState();
     this.energy = this.maxEnergy + (this.hasRelic('neural_shard') ? 1 : 0);
     this.block = this.hasRelic('ghost_firewall') ? 4 : 0;
     this.playerStatus = this.playerStatus || {};
@@ -499,10 +520,77 @@ export class Game {
     if (this.selectedTargetIndex < 0) this.selectedTargetIndex = 0;
     this.turn = 'player';
     this.message = kind === 'boss' ? 'Boss protocol detected.' : kind === 'secret' ? 'SECRET BOSS FOUND.' : 'Combat initialized.';
+    this.applyStartingRelicCombatStart();
     const openingDraw = 5 + (this.hasRelic('void_lens') ? 1 : 0) + (this.hasRelic('memory_cache') ? 1 : 0);
     this.drawCards(openingDraw);
     if (this.hasRelic('memory_cache')) this.floatText(340, 760, 'MEMORY CACHE +1 DRAW', RELIC_DB.memory_cache.color);
     this.state = 'combat';
+  }
+
+  resetStartingRelicCombatState() {
+    this.cloneCount = 0;
+    this.cloneBlock = 0;
+    this.boneShield = 0;
+    this.flow = 0;
+    this.stance = null;
+    this.stanceDrawLock = false;
+    this.overheat = 0;
+    this.maxOverheat = this.maxOverheat || 10;
+    this.releaseValveAttackBoost = false;
+    this.currentAttackDamageMultiplier = 1;
+  }
+
+  applyStartingRelicCombatStart() {
+    if (this.hasRelic('nuclear_core')) {
+      this.cloneCount += 1;
+      this.cloneBlock += 6;
+      this.floatText(315, 585, 'NUCLEAR CORE +1 CLONE', RELIC_DB.nuclear_core.color);
+    }
+    if (this.hasRelic('superconductive_crystal')) {
+      this.enemies.forEach(enemy => {
+        if (!enemy || enemy.hp <= 0) return;
+        enemy.status = enemy.status || {};
+        enemy.status.Frostbite = (enemy.status.Frostbite || 0) + 2;
+        enemy.status.Shock = (enemy.status.Shock || 0) + 2;
+      });
+      this.floatText(900, 245, 'SUPERCONDUCTIVE +FROSTBITE', RELIC_DB.superconductive_crystal.color);
+    }
+    if (this.hasRelic('cyber_black_belt')) {
+      this.flow += 2;
+      this.floatText(315, 615, 'CYBER BLACK BELT +2 FLOW', RELIC_DB.cyber_black_belt.color);
+    }
+  }
+
+  gainBoneShield(amount = 3) {
+    if (!this.hasRelic('priests_coffin')) return;
+    const gain = Math.max(0, amount || 0);
+    if (!gain) return;
+    this.boneShield += gain;
+    this.floatText(315, 650, `+${gain} BONE SHIELD`, RELIC_DB.priests_coffin.color);
+  }
+
+  gainOverheat(amount = 1) {
+    const gain = Math.max(0, amount || 0);
+    if (!gain) return;
+    this.overheat = clamp((this.overheat || 0) + gain, 0, this.maxOverheat || 10);
+    if (this.hasRelic('release_valve') && this.overheat >= (this.maxOverheat || 10) && !this.releaseValveAttackBoost) {
+      this.releaseValveAttackBoost = true;
+      this.overheat = 0;
+      this.floatText(315, 680, 'RELEASE VALVE ARMED', RELIC_DB.release_valve.color);
+    }
+  }
+
+  changeStance(nextStance) {
+    if (!nextStance || this.stance === nextStance) return;
+    this.stance = nextStance;
+    if (!this.hasRelic('cyber_black_belt') || this.stanceDrawLock) return;
+    this.stanceDrawLock = true;
+    try {
+      this.drawCards(1);
+      this.floatText(320, 735, 'BLACK BELT +1 DRAW', RELIC_DB.cyber_black_belt.color);
+    } finally {
+      this.stanceDrawLock = false;
+    }
   }
 
   rollEnemyIntent(enemy, kind = 'battle', offset = 0) {
@@ -526,6 +614,13 @@ export class Game {
   normalizeRelics(ids) {
     if (!Array.isArray(ids)) return [];
     return [...new Set(ids.filter(id => typeof id === 'string' && id.trim()))];
+  }
+
+  ensureStartingRelic(character) {
+    const id = character?.startingRelicId;
+    if (!id || !RELIC_DB[id] || this.relics.includes(id)) return false;
+    this.relics.push(id);
+    return true;
   }
 
   hasRelic(id) { return this.relics.includes(id); }
@@ -553,7 +648,7 @@ export class Game {
 
   relicRewardPool(strength = 'standard') {
     const owned = new Set(this.relics);
-    const available = RELIC_IDS.filter(id => !owned.has(id));
+    const available = RELIC_IDS.filter(id => !owned.has(id) && !RELIC_DB[id]?.starting);
     if (strength !== 'strong') return available;
     const strong = available.filter(id => ['rare', 'boss'].includes(RELIC_DB[id].tier));
     const fill = available.filter(id => !strong.includes(id));
@@ -636,9 +731,23 @@ export class Game {
       this.combatRelicState.firewallCharmUsed = true;
       this.floatText(300, 510, `FIREWALL -${reduced}`, RELIC_DB.firewall_charm.color);
     }
-    const absorbed = Math.min(this.block, incoming);
-    const hpLoss = incoming - absorbed;
-    this.block -= absorbed;
+    const cloneAbsorbed = Math.min(Math.max(0, this.cloneBlock || 0), incoming);
+    if (cloneAbsorbed) {
+      incoming -= cloneAbsorbed;
+      this.cloneBlock -= cloneAbsorbed;
+      if (this.cloneBlock <= 0) this.cloneCount = 0;
+      this.floatText(270, 505, `CLONE -${cloneAbsorbed}`, RELIC_DB.nuclear_core.color);
+    }
+    const blockAbsorbed = Math.min(this.block, incoming);
+    incoming -= blockAbsorbed;
+    this.block -= blockAbsorbed;
+    const boneAbsorbed = Math.min(Math.max(0, this.boneShield || 0), incoming);
+    if (boneAbsorbed) {
+      incoming -= boneAbsorbed;
+      this.boneShield -= boneAbsorbed;
+      this.floatText(270, 530, `BONE -${boneAbsorbed}`, RELIC_DB.priests_coffin.color);
+    }
+    const hpLoss = incoming;
     const prevHp = this.player.hp;
     this.player.hp -= hpLoss;
     if (total > 0) this.floatText(270, 455, hpLoss ? `-${hpLoss} HP` : 'BLOCKED', hpLoss ? '#ff4767' : '#54f8ff');
@@ -691,6 +800,8 @@ export class Game {
     this.combatRelicState.cardsPlayedThisTurn += 1;
 
     this.registerElements(card);
+    if (card.stance) this.changeStance(card.stance);
+    if (card.overheat) this.gainOverheat(card.overheat);
 
     if (card.selfDamage) {
       this.losePlayerHp(card.selfDamage, `-${card.selfDamage} HP`, '#ff4767', 1);
@@ -714,6 +825,13 @@ export class Game {
     }
     if (card.draw) this.drawCards(card.draw);
 
+    const releaseBoostedAttack = card.type === 'ATTACK' && this.releaseValveAttackBoost;
+    this.currentAttackDamageMultiplier = releaseBoostedAttack ? 1.5 : 1;
+    if (releaseBoostedAttack) {
+      this.releaseValveAttackBoost = false;
+      this.floatText(330, 690, 'RELEASE VALVE +50%', RELIC_DB.release_valve.color);
+    }
+
     if (card.damage || card.poison || card.shock || card.frost || card.burn || card.rad || card.soaked || card.vulnerable || card.weak) {
       const targets = card.target === 'all' ? this.enemies.filter(e => e.hp > 0) : [this.getSelectedEnemy()].filter(Boolean);
       targets.forEach((target, ti) => {
@@ -731,6 +849,7 @@ export class Game {
         this.tryFusion(card, target);
       });
     }
+    this.currentAttackDamageMultiplier = 1;
 
     this.applyCardRelics(card);
     if (this.enemies.every(e => e.hp <= 0)) this.winCombat();
@@ -751,6 +870,7 @@ export class Game {
     if (target.status?.['Rad Mark']) dmg += target.status['Rad Mark'];
     if (target.status?.Vulnerable) dmg = Math.ceil(dmg * 1.5);
     if (target.status?.Soaked && tags.includes('electric')) dmg += 3;
+    if (card.type === 'ATTACK' && this.currentAttackDamageMultiplier > 1) dmg = Math.ceil(dmg * this.currentAttackDamageMultiplier);
     return Math.max(0, Math.ceil(dmg));
   }
 
@@ -785,6 +905,7 @@ export class Game {
         }
       }
     }
+    if (card.exhaust || card.exhausts) this.gainBoneShield(3);
     if (this.powers['Endless Flow'] && this.combatRelicState.cardsPlayedThisTurn > 0 && this.combatRelicState.cardsPlayedThisTurn % 3 === 0) {
       this.drawCards(this.powers['Endless Flow']);
       this.floatText(330, 745, 'ENDLESS FLOW +1 DRAW', '#5fd7ff');
@@ -873,8 +994,14 @@ export class Game {
       if (e.status?.Burn) { e.hp -= e.status.Burn; this.floatText(1050, 475, `Burn -${e.status.Burn}`, '#ff7740'); e.status.Burn = Math.max(0, e.status.Burn - 1); }
       if (e.status?.['Rad Mark']) { e.hp -= Math.ceil(e.status['Rad Mark'] / 2); this.floatText(1050, 505, `Rad -${Math.ceil(e.status['Rad Mark'] / 2)}`, '#cfff42'); }
       if (e.hp <= 0) continue;
-      const frozen = e.status?.Frost > 0;
-      if (frozen) { e.status.Frost -= 1; this.floatText(1050, 535, 'FROZEN', '#80dfff'); e.intentPlan = this.rollEnemyIntent(e, this.currentNodeType); continue; }
+      const frozen = (e.status?.Frost || 0) > 0 || (e.status?.Frostbite || 0) > 0;
+      if (frozen) {
+        if ((e.status?.Frostbite || 0) > 0) e.status.Frostbite -= 1;
+        else e.status.Frost -= 1;
+        this.floatText(1050, 535, 'FROZEN', '#80dfff');
+        e.intentPlan = this.rollEnemyIntent(e, this.currentNodeType);
+        continue;
+      }
       const intent = e.intentPlan || this.rollEnemyIntent(e, this.currentNodeType);
       if (intent.type === 'attack' || intent.type === 'attackDebuff') {
         let dmg = intent.value || e.damage || 0;
@@ -990,7 +1117,7 @@ export class Game {
 
   openShop() {
     this.shopCards = shuffle(this.cardRewardPool()).slice(0, 5).map((id, i) => ({ id, price: this.cardPrice(CARD_DB[id], i), sold: false }));
-    this.shopRelics = shuffle(Object.keys(RELIC_DB).filter(id => !this.relics.includes(id))).slice(0, 3).map(id => ({ id, sold: false, price: RELIC_DB[id].price }));
+    this.shopRelics = shuffle(RELIC_IDS.filter(id => !this.relics.includes(id) && !RELIC_DB[id]?.starting)).slice(0, 3).map(id => ({ id, sold: false, price: RELIC_DB[id].price }));
     this.shopUtilities = ['nano_repair', 'system_purge', 'energy_refill', 'remove_card'].map(id => ({ id, sold: false, price: UTILITY_DB[id].price }));
     this.state = 'shop';
   }
@@ -1069,7 +1196,7 @@ export class Game {
   }
 
   statusColor(name) {
-    return { Poison: '#8cff3f', Shock: '#ffe14a', Frost: '#80dfff', Burn: '#ff7740', 'Rad Mark': '#cfff42', Soaked: '#5fd7ff', Vulnerable: '#ffb86a', Weak: '#b164ff' }[name] || '#fff';
+    return { Poison: '#8cff3f', Shock: '#ffe14a', Frost: '#80dfff', Frostbite: '#80dfff', Burn: '#ff7740', 'Rad Mark': '#cfff42', Soaked: '#5fd7ff', Vulnerable: '#ffb86a', Weak: '#b164ff' }[name] || '#fff';
   }
 
   handleClick(x, y) {

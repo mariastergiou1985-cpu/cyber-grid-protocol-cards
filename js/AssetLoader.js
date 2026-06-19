@@ -97,7 +97,13 @@ export const ASSET_MANIFEST = {
   relic_ice_protocol: './assets/relics/ice_protocol.png',
   relic_cultist_token: './assets/relics/cultist_token.png',
   relic_vault_key_fragment: './assets/relics/vault_key_fragment.png',
-  relic_phoenix_spark: './assets/relics/phoenix_spark.png'
+  relic_phoenix_spark: './assets/relics/phoenix_spark.png',
+
+  starting_nuclear_core: './assets/starting_relics/nuclear_core.png',
+  starting_superconductive_crystal: './assets/starting_relics/superconductive_crystal.png',
+  starting_priests_coffin: './assets/starting_relics/priests_coffin.png',
+  starting_release_valve: './assets/starting_relics/release_valve.png',
+  starting_cyber_black_belt: './assets/starting_relics/cyber_black_belt.png'
 };
 
 export class AssetLoader {
