@@ -1207,6 +1207,9 @@ export class Game {
         case 'continue': this.continueRun(); return;
         case 'gallery': this.state = 'gallery'; return;
         case 'menu': this.state = 'menu'; return;
+        case 'hudMenu': this.state = 'menu'; return;
+        case 'hudMap': this.floatText(820, 125, this.state === 'map' ? 'MAP ACTIVE' : 'MAP LOCKED', '#54f8ff'); return;
+        case 'hudDeck': this.floatText(820, 125, `DECK ${this.deck.length} / RELICS ${this.relics.length}`, '#ffd86a'); return;
         case 'endTurn': this.endTurn(); return;
         case 'reward': this.takeReward(button.data.id); return;
         case 'relicReward': this.takeRelicReward(button.data.id); return;
@@ -1349,7 +1352,7 @@ export class Game {
     this.button(ctx, 'menu', 1320, 810, 220, 58, 'BACK', '#54f8ff');
   }
 
-  drawTopHud(ctx, simple = false) {
+  drawTopHudLegacy(ctx, simple = false) {
     this.panel(ctx, 30, 24, 1540, 66, '#54f8ff', .62);
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
@@ -1369,6 +1372,213 @@ export class Game {
       ctx.fillText(`Relics ${this.relics.length}`, 1150, 57);
       this.drawRelicTray(ctx, 1265, 41);
     }
+  }
+
+  drawTopHud(ctx, simple = false) {
+    const x = 24;
+    const y = 18;
+    const w = 1552;
+    const h = 78;
+    const ch = this.getCurrentCharacter();
+    const accent = ch?.color || '#54f8ff';
+
+    ctx.save();
+    ctx.shadowColor = '#54f8ff';
+    ctx.shadowBlur = 24;
+    roundRect(ctx, x, y, w, h, 18);
+    const bg = ctx.createLinearGradient(x, y, x, y + h);
+    bg.addColorStop(0, 'rgba(7,28,42,.94)');
+    bg.addColorStop(.48, 'rgba(2,10,20,.90)');
+    bg.addColorStop(1, 'rgba(4,16,28,.96)');
+    ctx.fillStyle = bg;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(84,248,255,.92)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,.16)';
+    ctx.beginPath();
+    ctx.moveTo(x + 22, y + 1.5);
+    ctx.lineTo(x + w - 22, y + 1.5);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(84,248,255,.18)';
+    ctx.beginPath();
+    ctx.moveTo(x + 338, y + 14);
+    ctx.lineTo(x + 338, y + h - 14);
+    ctx.moveTo(x + 1088, y + 14);
+    ctx.lineTo(x + 1088, y + h - 14);
+    ctx.moveTo(x + 1368, y + 14);
+    ctx.lineTo(x + 1368, y + h - 14);
+    ctx.stroke();
+    ctx.restore();
+
+    this.drawHudAvatar(ctx, ch, x + 18, y + 10, 58);
+    ctx.save();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e8fdff';
+    ctx.font = '950 19px system-ui';
+    ctx.fillText(ch?.name || 'Unknown Protocol', x + 88, y + 26, 225);
+    if (this.player && !simple) {
+      const hp = Math.max(0, this.player.hp || 0);
+      const maxHp = Math.max(1, this.player.maxHp || ch?.hp || 1);
+      this.drawHudHp(ctx, x + 88, y + 45, 210, 16, hp, maxHp);
+      ctx.fillStyle = '#ff8aa0';
+      ctx.font = '950 12px system-ui';
+      ctx.fillText(`${hp}/${maxHp}`, x + 305, y + 53);
+    } else {
+      ctx.fillStyle = accent;
+      ctx.font = '850 12px system-ui';
+      ctx.fillText('PROTOCOL READY', x + 88, y + 55);
+    }
+    ctx.restore();
+
+    if (simple || !this.player) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(174,252,255,.82)';
+      ctx.font = '900 14px system-ui';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('CHARACTER DATABASE', x + w - 34, y + h / 2);
+      ctx.restore();
+      return;
+    }
+
+    this.drawHudMetric(ctx, x + 362, y + 16, 126, 46, 'CREDITS', this.credits ?? 0, '#ffd86a');
+    this.drawHudMetric(ctx, x + 502, y + 16, 110, 46, 'DECK', this.deck?.length || 0, '#ff4df0');
+    this.drawHudMetric(ctx, x + 626, y + 16, 116, 46, 'RELICS', this.relics?.length || 0, '#ffd86a');
+    this.drawRelicTray(ctx, x + 766, y + 23, 32, 8, 36);
+
+    ctx.save();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#aefcff';
+    ctx.font = '950 13px system-ui';
+    ctx.fillText(this.getCurrentZoneName().toUpperCase(), x + 1112, y + 29, 232);
+    ctx.fillStyle = '#e8fdff';
+    ctx.font = '950 20px system-ui';
+    ctx.fillText(`Node ${this.getNodeProgressText()}`, x + 1112, y + 55);
+    ctx.restore();
+
+    this.drawHudButton(ctx, 'hudMap', x + 1390, y + 20, 42, 38, 'MAP', '#54f8ff');
+    this.drawHudButton(ctx, 'hudDeck', x + 1440, y + 20, 42, 38, 'INV', '#ffd86a');
+    this.drawHudButton(ctx, 'hudMenu', x + 1490, y + 20, 56, 38, 'SET', '#ff4df0');
+  }
+
+  getCurrentCharacter() {
+    return this.player || CHARACTERS[this.selectedCharacterIndex] || CHARACTERS[0] || null;
+  }
+
+  getCurrentZoneName() {
+    const type = this.currentNodeType || this.activeMapNode?.type || 'battle';
+    if (type === 'boss') return 'Act I // Vault Core';
+    if (type === 'secret') return 'Act I // Secret Route';
+    if (type === 'elite') return 'Act I // Elite Gate';
+    if (type === 'shop') return 'Act I // Blacknet Market';
+    if (type === 'rest') return 'Act I // Repair Station';
+    if (type === 'treasure') return 'Act I // Data Vault';
+    return 'Act I // Data-Vault Route';
+  }
+
+  getNodeProgressText() {
+    const total = Math.max(1, MAP_LAYERS.length || 1);
+    const current = clamp((this.currentLayer ?? 0) + 1, 1, total);
+    return `${current}/${total}`;
+  }
+
+  drawHudAvatar(ctx, ch, x, y, size) {
+    const color = ch?.color || '#54f8ff';
+    const img = this.assets?.get?.(ch?.portrait || ch?.icon || ch?.art);
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18;
+    roundRect(ctx, x, y, size, size, 16);
+    ctx.fillStyle = 'rgba(2,9,18,.96)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.7;
+    ctx.stroke();
+    roundRect(ctx, x + 4, y + 4, size - 8, size - 8, 13);
+    ctx.clip();
+    if (img) {
+      drawCover(ctx, img, x + 4, y + 4, size - 8, size - 8);
+    } else {
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(84,248,255,.10)';
+      ctx.fillRect(x + 4, y + 4, size - 8, size - 8);
+      ctx.fillStyle = color;
+      ctx.font = '950 18px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const initials = (ch?.name || '??').split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
+      ctx.fillText(initials, x + size / 2, y + size / 2);
+    }
+    ctx.restore();
+  }
+
+  drawHudHp(ctx, x, y, w, h, hp, maxHp) {
+    const pct = clamp(hp / Math.max(1, maxHp), 0, 1);
+    ctx.save();
+    roundRect(ctx, x, y, w, h, 8);
+    ctx.fillStyle = 'rgba(255,71,103,.15)';
+    ctx.fill();
+    roundRect(ctx, x, y, w * pct, h, 8);
+    const fill = ctx.createLinearGradient(x, y, x + w, y);
+    fill.addColorStop(0, '#ff4767');
+    fill.addColorStop(.65, '#ff9f2f');
+    fill.addColorStop(1, '#ffd86a');
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.18)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, x, y, w, h, 8);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  drawHudMetric(ctx, x, y, w, h, label, value, color) {
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+    roundRect(ctx, x, y, w, h, 12);
+    ctx.fillStyle = 'rgba(2,9,18,.72)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = .78;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(232,253,255,.68)';
+    ctx.font = '850 10px system-ui';
+    ctx.fillText(label, x + w / 2, y + 13);
+    ctx.fillStyle = color;
+    ctx.font = '950 20px system-ui';
+    ctx.fillText(String(value), x + w / 2, y + 31);
+    ctx.restore();
+  }
+
+  drawHudButton(ctx, id, x, y, w, h, label, color) {
+    const hot = this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y && this.mouse.y <= y + h;
+    this.buttons.push(new Button(id, x, y, w, h, label, {}, color));
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = hot ? 20 : 10;
+    roundRect(ctx, x, y, w, h, 12);
+    ctx.fillStyle = hot ? 'rgba(16,42,62,.94)' : 'rgba(2,9,18,.78)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = hot ? 2.2 : 1.2;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#f6ffff';
+    ctx.font = `950 ${label.length > 2 ? 11 : 15}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x + w / 2, y + h / 2 + .5);
+    ctx.restore();
   }
 
   drawCombat(ctx) {
@@ -1465,15 +1675,15 @@ export class Game {
     });
   }
 
-  drawRelicTray(ctx, x, y) {
-    const ids = this.relics.slice(0, 8);
-    ids.forEach((id, i) => this.drawRelicIcon(ctx, id, x + i * 32, y, 26));
+  drawRelicTray(ctx, x, y, size = 26, max = 8, gap = 32) {
+    const ids = this.relics.slice(0, max);
+    ids.forEach((id, i) => this.drawRelicIcon(ctx, id, x + i * gap, y, size));
     if (this.relics.length > ids.length) {
       ctx.fillStyle = '#ffd86a';
       ctx.font = '950 12px system-ui';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`+${this.relics.length - ids.length}`, x + ids.length * 32 + 2, y + 13);
+      ctx.fillText(`+${this.relics.length - ids.length}`, x + ids.length * gap + 2, y + size / 2);
     }
   }
 
