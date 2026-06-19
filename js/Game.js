@@ -88,36 +88,49 @@ const ENEMIES = [
 ];
 
 
-const RUN_MAP_COLUMNS = [
-  [{ type: 'battle', label: 'BATTLE' }],
-  [{ type: 'battle', label: 'BATTLE' }, { type: 'shop', label: 'SHOP' }],
-  [{ type: 'battle', label: 'BATTLE' }, { type: 'rest', label: 'REST' }, { type: 'elite', label: 'ELITE' }],
-  [{ type: 'event', label: 'EVENT' }, { type: 'battle', label: 'BATTLE' }, { type: 'shop', label: 'SHOP' }],
-  [{ type: 'battle', label: 'BATTLE' }, { type: 'secretBoss', label: 'SECRET' }, { type: 'rest', label: 'REST' }],
-  [{ type: 'elite', label: 'ELITE' }, { type: 'battle', label: 'BATTLE' }, { type: 'shop', label: 'SHOP' }],
-  [{ type: 'battle', label: 'BATTLE' }, { type: 'event', label: 'EVENT' }, { type: 'secretBoss', label: 'SECRET' }],
-  [{ type: 'rest', label: 'REST' }, { type: 'elite', label: 'ELITE' }, { type: 'shop', label: 'SHOP' }],
-  [{ type: 'battle', label: 'BATTLE' }, { type: 'secretBoss', label: 'SECRET' }],
-  [{ type: 'boss', label: 'BOSS' }]
+const MAP_LAYERS = [
+  [{ id: 'n0a', type: 'battle', x: 250, y: 600, next: ['n1a', 'n1b'] }],
+  [
+    { id: 'n1a', type: 'battle', x: 430, y: 430, next: ['n2a', 'n2b'] },
+    { id: 'n1b', type: 'event', x: 450, y: 690, next: ['n2b', 'n2c'] }
+  ],
+  [
+    { id: 'n2a', type: 'shop', x: 650, y: 365, next: ['n3a', 'n3b'] },
+    { id: 'n2b', type: 'battle', x: 685, y: 565, next: ['n3a', 'n3c'] },
+    { id: 'n2c', type: 'rest', x: 625, y: 730, next: ['n3c'] }
+  ],
+  [
+    { id: 'n3a', type: 'elite', x: 890, y: 315, next: ['n4a', 'n4b'] },
+    { id: 'n3b', type: 'battle', x: 945, y: 520, next: ['n4b'] },
+    { id: 'n3c', type: 'shop', x: 880, y: 720, next: ['n4b', 'n4c'] }
+  ],
+  [
+    { id: 'n4a', type: 'secret', x: 1140, y: 300, next: ['n5a'] },
+    { id: 'n4b', type: 'battle', x: 1160, y: 535, next: ['n5a', 'n5b'] },
+    { id: 'n4c', type: 'rest', x: 1085, y: 745, next: ['n5b'] }
+  ],
+  [
+    { id: 'n5a', type: 'elite', x: 1360, y: 410, next: ['boss'] },
+    { id: 'n5b', type: 'shop', x: 1340, y: 675, next: ['boss'] }
+  ],
+  [{ id: 'boss', type: 'boss', x: 1490, y: 520, next: [] }]
 ];
+const MAP_NODES = MAP_LAYERS.flat();
 
-const SHOP_RELICS = [
-  { id: 'neural_shard', name: 'Neural Shard', text: '+1 max Energy this run.', price: 180, color: '#54f8ff' },
-  { id: 'void_lens', name: 'Void Lens', text: 'Draw +1 at combat start.', price: 160, color: '#b164ff' },
-  { id: 'cr4_core', name: 'CR-4 Core', text: 'Start combat with 12 Block.', price: 170, color: '#ffd86a' },
-  { id: 'toxic_injector_chip', name: 'Toxic Injector', text: 'Toxin cards apply +1 Poison.', price: 150, color: '#8cff3f' },
-  { id: 'frozen_circuit_chip', name: 'Frozen Circuit', text: 'Frost cards apply +1 Frost.', price: 150, color: '#80dfff' },
-  { id: 'plasma_lens_chip', name: 'Plasma Lens', text: 'Fire attacks deal +2 damage.', price: 165, color: '#ff7740' }
-];
-
-const SHOP_UTILITIES = [
-  { id: 'nano_repair', name: 'Nano Repair', text: 'Heal 20 HP now.', price: 80, color: '#8cff3f' },
-  { id: 'system_purge', name: 'System Purge', text: 'Clean bad status / gain 6 Block next combat.', price: 70, color: '#54f8ff' },
-  { id: 'overclock_drive', name: 'Overclock Drive', text: 'Add 1 Overclock to deck.', price: 120, color: '#b164ff' }
-];
-const REMOVE_CARD_PRICE = 75;
-const SHOP_REFRESH_PRICE = 60;
-
+const RELIC_DB = {
+  neural_shard: { name: 'Neural Shard', price: 180, color: '#54f8ff', text: '+1 max Energy during combat.' },
+  void_lens: { name: 'Void Lens', price: 160, color: '#b164ff', text: 'Draw +1 card at combat start.' },
+  ghost_firewall: { name: 'Ghost Firewall', price: 150, color: '#54f8ff', text: 'Start combat with 4 Block.' },
+  plasma_lens: { name: 'Plasma Lens', price: 170, color: '#ff7740', text: '+2 damage on Attack cards.' },
+  toxic_injector: { name: 'Toxic Injector', price: 175, color: '#8cff3f', text: 'Toxin cards apply +1 Poison.' },
+  protocol_crown: { name: 'Protocol Crown', price: 220, color: '#ffd86a', text: 'Gain +15 credits after elite/boss fights.' }
+};
+const UTILITY_DB = {
+  nano_repair: { name: 'Nano Repair', price: 80, color: '#8cff3f', text: 'Heal 20 HP.' },
+  energy_refill: { name: 'Energy Refill', price: 65, color: '#ffe14a', text: 'Gain +1 max Energy this run.' },
+  system_purge: { name: 'System Purge', price: 70, color: '#54f8ff', text: 'Clear player Poison/Weak.' },
+  remove_card: { name: 'Remove Card', price: 75, color: '#ff4df0', text: 'Remove one card from your deck.' }
+};
 
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 function copy(value) { return JSON.parse(JSON.stringify(value)); }
@@ -208,11 +221,16 @@ export class Game {
     this.maxEnergy = 3;
     this.turn = 'player';
     this.node = 0;
+    this.currentLayer = 0;
+    this.availableNodes = ['n0a'];
+    this.completedNodes = [];
+    this.currentNodeType = 'battle';
+    this.selectedTargetIndex = 0;
     this.credits = 50;
     this.block = 0;
     this.powers = {};
     this.relics = [];
-    this.pendingRemovePrice = 0;
+    this.playerStatus = {};
     this.elementMemory = new Set();
     this.message = '';
     this.fx = [];
@@ -220,9 +238,6 @@ export class Game {
     this.shopCards = [];
     this.shopRelics = [];
     this.shopUtilities = [];
-    this.relics = [];
-    this.pendingRemovePrice = 0;
-    this.currentCombatKind = 'battle';
     this.hasSave = Boolean(safeGet(SAVE_KEY));
     this.bindEvents();
   }
@@ -265,12 +280,18 @@ export class Game {
     this.player = { ...copy(base), hp: base.hp, maxHp: base.hp, block: 0 };
     this.credits = 50;
     this.node = 0;
+    this.currentLayer = 0;
+    this.availableNodes = ['n0a'];
+    this.completedNodes = [];
+    this.currentNodeType = 'battle';
+    this.selectedTargetIndex = 0;
     this.maxEnergy = base.id === 'oni_cataclysm' ? 3 : 3;
     this.powers = {};
     this.relics = [];
-    this.pendingRemovePrice = 0;
+    this.playerStatus = {};
     this.elementMemory = new Set();
     this.deck = this.getStarterDeck(base);
+    this.activeMapNode = this.getNodeById('n0a');
     this.startCombat('battle');
     this.save();
   }
@@ -293,7 +314,19 @@ export class Game {
 
   save() {
     if (!this.player) return;
-    safeSet(SAVE_KEY, JSON.stringify({ character: this.selectedCharacterIndex, hp: this.player.hp, maxHp: this.player.maxHp, deck: this.deck, node: this.node, credits: this.credits, relics: this.relics }));
+    safeSet(SAVE_KEY, JSON.stringify({
+      character: this.selectedCharacterIndex,
+      hp: this.player.hp,
+      maxHp: this.player.maxHp,
+      deck: this.deck,
+      node: this.node,
+      currentLayer: this.currentLayer,
+      availableNodes: this.availableNodes,
+      completedNodes: this.completedNodes,
+      credits: this.credits,
+      relics: this.relics,
+      maxEnergy: this.maxEnergy
+    }));
     this.hasSave = true;
   }
 
@@ -307,10 +340,15 @@ export class Game {
       this.player = { ...copy(base), hp: data.hp ?? base.hp, maxHp: data.maxHp ?? base.hp, block: 0 };
       this.deck = Array.isArray(data.deck) ? data.deck.filter(id => CARD_DB[id]) : this.getStarterDeck(base);
       this.powers = {};
+      this.relics = Array.isArray(data.relics) ? data.relics.filter(id => RELIC_DB[id]) : [];
+      this.playerStatus = {};
       this.elementMemory = new Set();
       this.node = data.node ?? 0;
+      this.currentLayer = data.currentLayer ?? Math.min(this.node, MAP_LAYERS.length - 1);
+      this.availableNodes = Array.isArray(data.availableNodes) ? data.availableNodes : (MAP_LAYERS[this.currentLayer] || []).map(n => n.id);
+      this.completedNodes = Array.isArray(data.completedNodes) ? data.completedNodes : [];
+      this.maxEnergy = data.maxEnergy ?? this.maxEnergy ?? 3;
       this.credits = data.credits ?? 50;
-      this.relics = Array.isArray(data.relics) ? data.relics : [];
       this.state = 'map';
     } catch (err) {
       console.warn('[save] invalid save', err);
@@ -325,38 +363,56 @@ export class Game {
   }
 
   startCombat(kind = 'battle') {
-    this.currentCombatKind = kind;
-    const boss = kind === 'boss';
-    const secret = kind === 'secretBoss';
-    const elite = kind === 'elite';
-    const count = boss ? 1 : secret ? 2 : elite ? 2 : 1 + (this.node % 3 === 0 ? 1 : 0);
-    const pool = boss ? [ENEMIES[4]] : secret ? [ENEMIES[3], ENEMIES[4]] : elite ? ENEMIES.slice(2, 5) : ENEMIES.slice(0, 4);
+    this.currentNodeType = kind;
+    const count = kind === 'boss' || kind === 'secret' ? 1 : kind === 'elite' ? 2 : 1 + (this.node % 3 === 0 ? 1 : 0);
+    const pool = kind === 'boss'
+      ? [{ ...ENEMIES[4], name: 'Vault Overseer', hp: 140, damage: 16, intent: 'Core Crush', color: '#ff315e' }]
+      : kind === 'secret'
+        ? [{ ...ENEMIES[4], name: 'Secret Blacknet Boss', hp: 125, damage: 15, intent: 'Hidden Protocol', color: '#ff4df0' }]
+        : kind === 'elite' ? ENEMIES.slice(2, 5) : ENEMIES.slice(0, 4);
     this.enemies = Array.from({ length: count }, (_, i) => {
       const tpl = copy(pool[(this.node + i) % pool.length]);
-      const bonus = boss ? 65 : secret ? 38 : elite ? 18 : 0;
+      const bonus = kind === 'boss' ? 35 : kind === 'secret' ? 30 : kind === 'elite' ? 18 : 0;
       tpl.maxHp = tpl.hp + bonus;
       tpl.hp = tpl.maxHp;
+      tpl.block = 0;
       tpl.status = {};
-      if (secret) {
-        tpl.name = `Secret ${tpl.name}`;
-        tpl.damage += 3;
-        tpl.color = '#ff315e';
-      }
+      tpl.intentPlan = this.rollEnemyIntent(tpl, kind, i);
       return tpl;
     });
     this.drawPile = shuffle(this.deck);
     this.discard = [];
     this.hand = [];
-    this.energy = this.maxEnergy;
-    this.block = this.hasRelic('cr4_core') ? 12 : 0;
+    this.energy = this.maxEnergy + (this.hasRelic('neural_shard') ? 1 : 0);
+    this.block = this.hasRelic('ghost_firewall') ? 4 : 0;
+    this.playerStatus = this.playerStatus || {};
+    this.selectedTargetIndex = this.enemies.findIndex(e => e.hp > 0);
+    if (this.selectedTargetIndex < 0) this.selectedTargetIndex = 0;
     this.turn = 'player';
-    this.message = boss ? 'Boss protocol detected.' : secret ? 'Secret boss breach opened.' : elite ? 'Elite protocol detected.' : 'Combat initialized.';
-    this.drawCards(5 + (this.hasRelic('void_lens') ? 1 : 0));
-    if (this.hasRelic('toxic_injector_chip')) this.gainPower('Venom Injector', 1);
-    if (this.hasRelic('frozen_circuit_chip')) this.gainPower('Cryo Engine', 1);
-    if (this.hasRelic('plasma_lens_chip')) this.gainPower('Plasma Lens', 1);
+    this.message = kind === 'boss' ? 'Boss protocol detected.' : kind === 'secret' ? 'SECRET BOSS FOUND.' : 'Combat initialized.';
+    this.drawCards(this.hasRelic('void_lens') ? 6 : 5);
     this.state = 'combat';
   }
+
+  rollEnemyIntent(enemy, kind = 'battle', offset = 0) {
+    const mod = (this.node + offset + Math.floor(this.time * 10)) % 4;
+    if (kind === 'boss' || enemy.name.includes('Boss') || enemy.name.includes('Overseer')) {
+      return [
+        { type: 'attack', label: 'Core Crush', value: enemy.damage + 4 },
+        { type: 'debuff', label: 'Corrupt', value: 2 },
+        { type: 'shield', label: 'Fortify', value: 18 },
+        { type: 'attackDebuff', label: 'Rend', value: enemy.damage, weak: 1 }
+      ][mod];
+    }
+    if (enemy.id === 'toxic_drone_hound') return mod % 2 ? { type: 'poison', label: 'Toxic Bite', value: 5, poison: 2 } : { type: 'attack', label: 'Bite', value: enemy.damage };
+    if (enemy.id === 'neon_cultist') return mod % 3 === 0 ? { type: 'buff', label: 'Dark Rite', value: 3 } : { type: 'debuff', label: 'Hex', value: 1 };
+    if (enemy.id === 'glitch_raven') return mod % 2 ? { type: 'debuff', label: 'Glitch', value: 1 } : { type: 'attack', label: 'Peck', value: enemy.damage };
+    if (enemy.id === 'scrap_reaper') return mod % 2 ? { type: 'attackDebuff', label: 'Scythe', value: enemy.damage, weak: 1 } : { type: 'shield', label: 'Scrap Armor', value: 10 };
+    if (enemy.id === 'corrupted_sentinel') return mod % 2 ? { type: 'shield', label: 'Core Guard', value: 14 } : { type: 'attack', label: 'Core Slam', value: enemy.damage };
+    return { type: 'attack', label: enemy.intent || 'Attack', value: enemy.damage || 6 };
+  }
+
+  hasRelic(id) { return this.relics.includes(id); }
 
   drawCards(n) {
     for (let i = 0; i < n; i++) {
@@ -366,6 +422,23 @@ export class Game {
       }
       if (this.drawPile.length) this.hand.push(this.drawPile.shift());
     }
+  }
+
+
+  getSelectedEnemy() {
+    if (this.enemies[this.selectedTargetIndex]?.hp > 0) return this.enemies[this.selectedTargetIndex];
+    const next = this.enemies.findIndex(e => e.hp > 0);
+    this.selectedTargetIndex = next < 0 ? 0 : next;
+    return this.enemies[this.selectedTargetIndex];
+  }
+
+  damageEnemy(enemy, amount) {
+    if (!enemy || amount <= 0) return 0;
+    const absorbed = Math.min(enemy.block || 0, amount);
+    enemy.block = Math.max(0, (enemy.block || 0) - absorbed);
+    const dealt = Math.max(0, amount - absorbed);
+    enemy.hp -= dealt;
+    return dealt;
   }
 
   playCard(index) {
@@ -402,15 +475,16 @@ export class Game {
     if (card.draw) this.drawCards(card.draw);
 
     if (card.damage || card.poison || card.shock || card.frost || card.burn || card.rad || card.soaked || card.vulnerable || card.weak) {
-      const targets = card.target === 'all' ? this.enemies.filter(e => e.hp > 0) : this.enemies.filter(e => e.hp > 0).slice(0, 1);
+      const targets = card.target === 'all' ? this.enemies.filter(e => e.hp > 0) : [this.getSelectedEnemy()].filter(Boolean);
       targets.forEach((target, ti) => {
         const hits = card.hits || 1;
         for (let h = 0; h < hits; h++) {
           if (card.damage) {
             const dmg = this.computeDamage(card, target);
-            target.hp -= dmg;
-            this.floatText(1040 + ti * 70, 370 + h * 28, `-${dmg}`, '#ff4767');
-            this.fx.push({ x: 1060 + ti * 70, y: 430, life: .35, color: this.cardColor(card), kind: 'burst' });
+            const dealt = this.damageEnemy(target, dmg);
+            const tx = 980 + this.enemies.indexOf(target) * 170;
+            this.floatText(tx, 370 + h * 28, dealt > 0 ? `-${dealt}` : 'BLOCK', dealt > 0 ? '#ff4767' : '#54f8ff');
+            this.fx.push({ x: tx, y: 430, life: .35, color: this.cardColor(card), kind: 'burst' });
           }
         }
         this.applyStatus(target, card);
@@ -424,8 +498,8 @@ export class Game {
   computeDamage(card, target) {
     let dmg = card.damage || 0;
     const tags = card.elementTags || [];
+    if (this.hasRelic('plasma_lens') && card.type === 'ATTACK') dmg += 2;
     if (this.powers['Demon Reactor'] && (tags.includes('fire') || tags.includes('radiation'))) dmg += 2 * this.powers['Demon Reactor'];
-    if (this.powers['Plasma Lens'] && tags.includes('fire')) dmg += 2 * this.powers['Plasma Lens'];
     if (this.powers['Storm Circuit'] && tags.includes('electric')) dmg += this.powers['Storm Circuit'];
     if (target.status?.Shock) dmg += target.status.Shock;
     if (target.status?.['Rad Mark']) dmg += target.status['Rad Mark'];
@@ -462,7 +536,7 @@ export class Game {
     else if (has('fire') && has('frost')) fusion = { name: 'THERMAL SHOCK', damage: 6, burn: 1, color: '#ff7740' };
     else if (has('toxin') && has('electric')) fusion = { name: 'NEUROTOXIN ARC', damage: 3, poison: 1, shock: 1, color: '#8cff3f' };
     if (!fusion) return;
-    enemy.hp -= fusion.damage;
+    this.damageEnemy(enemy, fusion.damage);
     this.applyStatus(enemy, fusion);
     this.floatText(800, 240, fusion.name, fusion.color);
     this.fx.push({ x: 1030, y: 420, life: .6, color: fusion.color, kind: 'burst' });
@@ -479,6 +553,7 @@ export class Game {
       if (name === 'Shock' && this.powers['Storm Circuit']) a += this.powers['Storm Circuit'];
       if (name === 'Frost' && this.powers['Cryo Engine']) a += this.powers['Cryo Engine'];
       if (name === 'Poison' && this.powers['Venom Injector']) a += this.powers['Venom Injector'];
+      if (name === 'Poison' && this.hasRelic('toxic_injector')) a += 1;
       if (name === 'Rad Mark' && this.powers['Demon Reactor']) a += this.powers['Demon Reactor'];
       return a;
     };
@@ -507,6 +582,12 @@ export class Game {
     if (this.state !== 'combat' || this.turn !== 'player') return;
     this.turn = 'enemy';
     let total = 0;
+    if (this.playerStatus?.Poison) {
+      const p = this.playerStatus.Poison;
+      this.player.hp -= p;
+      this.floatText(270, 425, `Poison -${p}`, '#8cff3f');
+      this.playerStatus.Poison = Math.max(0, p - 1);
+    }
     for (const e of this.enemies) {
       if (e.hp <= 0) continue;
       if (e.status?.Poison) { e.hp -= e.status.Poison; this.floatText(1050, 445, `Poison -${e.status.Poison}`, '#8cff3f'); }
@@ -514,26 +595,47 @@ export class Game {
       if (e.status?.['Rad Mark']) { e.hp -= Math.ceil(e.status['Rad Mark'] / 2); this.floatText(1050, 505, `Rad -${Math.ceil(e.status['Rad Mark'] / 2)}`, '#cfff42'); }
       if (e.hp <= 0) continue;
       const frozen = e.status?.Frost > 0;
-      if (frozen) { e.status.Frost -= 1; this.floatText(1050, 535, 'FROZEN', '#80dfff'); continue; }
-      let dmg = e.damage;
-      if (e.status?.Weak) dmg = Math.ceil(dmg * 0.70);
-      total += dmg;
+      if (frozen) { e.status.Frost -= 1; this.floatText(1050, 535, 'FROZEN', '#80dfff'); e.intentPlan = this.rollEnemyIntent(e, this.currentNodeType); continue; }
+      const intent = e.intentPlan || this.rollEnemyIntent(e, this.currentNodeType);
+      if (intent.type === 'attack' || intent.type === 'attackDebuff') {
+        let dmg = intent.value || e.damage || 0;
+        if (e.status?.Weak) dmg = Math.ceil(dmg * 0.70);
+        if (this.playerStatus?.Weak) dmg = Math.ceil(dmg * 1.20);
+        total += dmg;
+        if (intent.weak) this.playerStatus.Weak = (this.playerStatus.Weak || 0) + intent.weak;
+      } else if (intent.type === 'poison') {
+        total += intent.value || 0;
+        this.playerStatus.Poison = (this.playerStatus.Poison || 0) + (intent.poison || 1);
+        this.floatText(270, 480, `Poison +${intent.poison || 1}`, '#8cff3f');
+      } else if (intent.type === 'shield') {
+        e.block = (e.block || 0) + (intent.value || 8);
+        this.floatText(1000, 470, `+${intent.value || 8} BLOCK`, e.color);
+      } else if (intent.type === 'buff') {
+        e.damage = (e.damage || 0) + (intent.value || 2);
+        e.block = (e.block || 0) + 5;
+        this.floatText(1000, 470, `BUFF +${intent.value || 2}`, e.color);
+      } else if (intent.type === 'debuff') {
+        this.playerStatus.Weak = (this.playerStatus.Weak || 0) + (intent.value || 1);
+        this.floatText(270, 480, `WEAK +${intent.value || 1}`, '#b164ff');
+      }
       if (e.status?.Shock) e.status.Shock = Math.max(0, e.status.Shock - 1);
       if (e.status?.Vulnerable) e.status.Vulnerable = Math.max(0, e.status.Vulnerable - 1);
       if (e.status?.Weak) e.status.Weak = Math.max(0, e.status.Weak - 1);
       if (e.status?.Soaked) e.status.Soaked = Math.max(0, e.status.Soaked - 1);
+      e.intentPlan = this.rollEnemyIntent(e, this.currentNodeType);
     }
     const absorbed = Math.min(this.block, total);
     const hpLoss = total - absorbed;
     this.block -= absorbed;
     this.player.hp -= hpLoss;
     if (total > 0) this.floatText(270, 455, hpLoss ? `-${hpLoss} HP` : 'BLOCKED', hpLoss ? '#ff4767' : '#54f8ff');
+    if (this.playerStatus?.Weak) this.playerStatus.Weak = Math.max(0, this.playerStatus.Weak - 1);
     if (this.player.hp <= 0) { this.state = 'gameover'; return; }
     if (this.enemies.every(e => e.hp <= 0)) { this.winCombat(); return; }
     this.hand.forEach(id => this.discard.push(id));
     this.hand = [];
-    this.energy = this.maxEnergy;
-    this.block = 0;
+    this.energy = this.maxEnergy + (this.hasRelic('neural_shard') ? 1 : 0);
+    this.block = this.hasRelic('ghost_firewall') ? 4 : 0;
     this.elementMemory = new Set();
     this.turn = 'player';
     this.drawCards(5);
@@ -541,45 +643,71 @@ export class Game {
   }
 
   winCombat() {
-    const bonus = this.currentCombatKind === 'secretBoss' ? 55 : this.currentCombatKind === 'elite' ? 35 : this.currentCombatKind === 'boss' ? 90 : 25;
-    this.credits += bonus + this.node * 3;
+    const bonus = this.currentNodeType === 'boss' ? 60 : this.currentNodeType === 'secret' ? 55 : this.currentNodeType === 'elite' ? 40 : 25;
+    this.credits += bonus + this.node * 3 + (this.hasRelic('protocol_crown') && ['elite','boss','secret'].includes(this.currentNodeType) ? 15 : 0);
     this.rewardCards = shuffle(this.cardRewardPool()).slice(0, 3);
     this.state = 'reward';
     this.save();
   }
 
-  advanceNode() {
-    this.node += 1;
-    this.pendingRemovePrice = 0;
-    this.state = this.node >= RUN_MAP_COLUMNS.length ? 'victory' : 'map';
-    this.save();
+  completeCurrentNode() {
+    const active = this.activeMapNode;
+    if (active && !this.completedNodes.includes(active.id)) this.completedNodes.push(active.id);
+    if (active?.next?.length) {
+      this.currentLayer = Math.min(this.currentLayer + 1, MAP_LAYERS.length - 1);
+      this.availableNodes = [...active.next];
+    } else {
+      this.currentLayer = MAP_LAYERS.length;
+      this.availableNodes = [];
+    }
+    this.node = this.completedNodes.length;
+    this.activeMapNode = null;
   }
 
   takeReward(id) {
     if (id && CARD_DB[id]) this.deck.push(id);
-    this.advanceNode();
+    this.completeCurrentNode();
+    if (this.currentLayer >= MAP_LAYERS.length) this.state = 'victory';
+    else this.state = 'map';
+    this.save();
   }
 
-  enterNode(type = null) {
-    const choices = RUN_MAP_COLUMNS[this.node] || [{ type: 'boss', label: 'BOSS' }];
-    const selectedType = type || choices[0]?.type || 'battle';
-    if (selectedType === 'shop') this.openShop();
-    else if (selectedType === 'rest') this.state = 'rest';
-    else if (selectedType === 'event') this.openEvent();
-    else this.startCombat(selectedType);
+  enterNode(type = null, node = null) {
+    const chosen = node || this.getNodeById(this.availableNodes[0]);
+    if (chosen) this.activeMapNode = chosen;
+    const nodeType = type || chosen?.type || 'battle';
+    this.currentNodeType = nodeType;
+    if (nodeType === 'shop') this.openShop();
+    else if (nodeType === 'rest') this.state = 'rest';
+    else if (nodeType === 'event') this.resolveEventNode();
+    else this.startCombat(nodeType);
   }
 
-  openEvent() {
-    this.credits += 35;
-    this.deck.push(choose(this.cardRewardPool()));
-    this.floatText(W / 2, 310, '+35 credits / random card', '#ffd86a');
-    this.advanceNode();
+  resolveEventNode() {
+    const roll = (this.node + this.deck.length) % 3;
+    if (roll === 0) {
+      this.credits += 35;
+      this.message = 'Data cache cracked: +35 credits.';
+    } else if (roll === 1) {
+      this.deck.push(choose(this.cardRewardPool()));
+      this.message = 'Blacknet packet found: card added.';
+    } else {
+      this.player.hp = clamp(this.player.hp + 12, 1, this.player.maxHp);
+      this.message = 'Emergency med-stream: +12 HP.';
+    }
+    this.completeCurrentNode();
+    this.state = 'map';
+    this.save();
+  }
+
+  getNodeById(id) {
+    return MAP_NODES.find(n => n.id === id) || null;
   }
 
   openShop() {
     this.shopCards = shuffle(this.cardRewardPool()).slice(0, 5).map((id, i) => ({ id, price: this.cardPrice(CARD_DB[id], i), sold: false }));
-    this.shopRelics = shuffle(SHOP_RELICS).slice(0, 4).map(r => ({ ...r, sold: this.hasRelic(r.id) }));
-    this.shopUtilities = SHOP_UTILITIES.map(u => ({ ...u, sold: false }));
+    this.shopRelics = shuffle(Object.keys(RELIC_DB).filter(id => !this.relics.includes(id))).slice(0, 3).map(id => ({ id, sold: false, price: RELIC_DB[id].price }));
+    this.shopUtilities = ['nano_repair', 'system_purge', 'energy_refill', 'remove_card'].map(id => ({ id, sold: false, price: UTILITY_DB[id].price }));
     this.state = 'shop';
   }
 
@@ -592,70 +720,64 @@ export class Game {
     this.save();
   }
 
-  hasRelic(id) { return this.relics.some(r => r.id === id); }
-
   buyRelic(slot) {
-    if (!slot || slot.sold || this.credits < slot.price || this.hasRelic(slot.id)) return;
+    if (slot.sold || this.credits < slot.price || this.relics.includes(slot.id)) return;
     this.credits -= slot.price;
+    this.relics.push(slot.id);
     slot.sold = true;
-    this.relics.push({ id: slot.id, name: slot.name, color: slot.color });
-    if (slot.id === 'neural_shard') {
-      this.maxEnergy += 1;
-      this.energy += 1;
-    }
-    this.floatText(800, 760, `${slot.name} acquired`, slot.color);
+    this.floatText(800, 780, `${RELIC_DB[slot.id].name} BOUGHT`, RELIC_DB[slot.id].color);
     this.save();
   }
 
   buyUtility(slot) {
-    if (!slot || slot.sold || this.credits < slot.price) return;
+    if (slot.sold || this.credits < slot.price) return;
+    const id = slot.id;
+    if (id === 'remove_card') { this.state = 'remove'; return; }
     this.credits -= slot.price;
+    if (id === 'nano_repair') this.player.hp = clamp(this.player.hp + 20, 1, this.player.maxHp);
+    if (id === 'system_purge') this.playerStatus = {};
+    if (id === 'energy_refill') this.maxEnergy += 1;
     slot.sold = true;
-    if (slot.id === 'nano_repair') {
-      this.player.hp = clamp(this.player.hp + 20, 1, this.player.maxHp);
-      this.floatText(800, 760, '+20 HP', '#8cff3f');
-    } else if (slot.id === 'system_purge') {
-      this.block += 6;
-      this.floatText(800, 760, 'PURGE READY +6 BLOCK', '#54f8ff');
-    } else if (slot.id === 'overclock_drive') {
-      this.deck.push('overclock');
-      this.floatText(800, 760, 'OVERCLOCK ADDED', '#b164ff');
-    }
+    this.floatText(800, 780, `${UTILITY_DB[id].name} USED`, UTILITY_DB[id].color);
     this.save();
   }
 
   refreshShop() {
-    if (this.credits < SHOP_REFRESH_PRICE) return;
-    this.credits -= SHOP_REFRESH_PRICE;
+    const price = 25;
+    if (this.credits < price) return;
+    this.credits -= price;
     this.openShop();
     this.floatText(800, 820, 'SHOP REFRESHED', '#54f8ff');
     this.save();
   }
 
-  startRemoveCard(price = REMOVE_CARD_PRICE) {
-    if (this.credits < price || this.deck.length <= 1) return;
-    this.pendingRemovePrice = price;
-    this.state = 'remove';
-  }
-
   removeDeckCard(index) {
-    if (index < 0 || index >= this.deck.length || this.credits < this.pendingRemovePrice) return;
-    const removed = this.deck.splice(index, 1)[0];
-    this.credits -= this.pendingRemovePrice;
-    this.pendingRemovePrice = 0;
-    this.floatText(800, 740, `${CARD_DB[removed]?.title || removed} removed`, '#ff4df0');
+    if (index < 0 || index >= this.deck.length || this.credits < UTILITY_DB.remove_card.price) return;
+    const [removed] = this.deck.splice(index, 1);
+    this.credits -= UTILITY_DB.remove_card.price;
+    this.floatText(800, 820, `${CARD_DB[removed]?.title || removed} REMOVED`, '#ff4df0');
     this.state = 'shop';
     this.save();
   }
 
   healRest() {
     this.player.hp = clamp(this.player.hp + Math.ceil(this.player.maxHp * .3), 1, this.player.maxHp);
-    this.advanceNode();
+    this.completeCurrentNode();
+    this.state = this.currentLayer >= MAP_LAYERS.length ? 'victory' : 'map';
+    this.save();
   }
 
-  tuneDeckRest() {
+  upgradeRest() {
     this.deck.push('plasma_cut');
-    this.advanceNode();
+    this.completeCurrentNode();
+    this.state = this.currentLayer >= MAP_LAYERS.length ? 'victory' : 'map';
+    this.save();
+  }
+
+  leaveShop() {
+    this.completeCurrentNode();
+    this.state = this.currentLayer >= MAP_LAYERS.length ? 'victory' : 'map';
+    this.save();
   }
 
   floatText(x, y, text, color) {
@@ -677,21 +799,25 @@ export class Game {
         case 'endTurn': this.endTurn(); return;
         case 'reward': this.takeReward(button.data.id); return;
         case 'skipReward': this.takeReward(null); return;
-        case 'node': this.enterNode(button.data.type); return;
+        case 'node': this.enterNode(button.data.type, button.data.node); return;
+        case 'enemyTarget': this.selectedTargetIndex = button.data.index; return;
         case 'shopCard': this.buyCard(button.data.slot); return;
         case 'shopRelic': this.buyRelic(button.data.slot); return;
         case 'shopUtility': this.buyUtility(button.data.slot); return;
-        case 'shopRemove': this.startRemoveCard(button.data.price); return;
-        case 'shopRefresh': this.refreshShop(); return;
+        case 'refreshShop': this.refreshShop(); return;
+        case 'leaveShop': this.leaveShop(); return;
         case 'removeCard': this.removeDeckCard(button.data.index); return;
-        case 'leaveShop': this.advanceNode(); return;
+        case 'backShop': this.state = 'shop'; return;
         case 'restHeal': this.healRest(); return;
-        case 'restUpgrade': this.tuneDeckRest(); return;
+        case 'restUpgrade': this.upgradeRest(); return;
         case 'selectCharacter': this.selectedCharacterIndex = button.data.index; this.newRun(); return;
         default: return;
       }
     }
     if (this.state === 'combat') {
+      for (const button of this.buttons) {
+        if (button.id === 'enemyTarget' && button.contains(x, y)) { this.selectedTargetIndex = button.data.index; return; }
+      }
       for (let i = this.cardRects.length - 1; i >= 0; i--) {
         const r = this.cardRects[i];
         if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) { this.playCard(r.index); return; }
@@ -710,8 +836,8 @@ export class Game {
     else if (this.state === 'reward') this.drawReward(ctx);
     else if (this.state === 'map') this.drawMap(ctx);
     else if (this.state === 'shop') this.drawShop(ctx);
-    else if (this.state === 'remove') this.drawRemove(ctx);
     else if (this.state === 'rest') this.drawRest(ctx);
+    else if (this.state === 'remove') this.drawRemove(ctx);
     else if (this.state === 'victory') this.drawEnd(ctx, 'PROTOCOL CLEARED', '#ffd86a');
     else if (this.state === 'gameover') this.drawEnd(ctx, 'RUN TERMINATED', '#ff4767');
     this.drawEffects(ctx);
@@ -822,9 +948,11 @@ export class Game {
       ctx.fillStyle = '#ffd86a';
       ctx.fillText(`◈ ${this.credits} credits`, 650, 57);
       ctx.fillStyle = '#9ff';
-      ctx.fillText(`Node ${Math.min(this.node + 1, RUN_MAP_COLUMNS.length)}/${RUN_MAP_COLUMNS.length}`, 835, 57);
+      ctx.fillText(`Node ${Math.min(this.currentLayer + 1, MAP_LAYERS.length)}/${MAP_LAYERS.length}`, 835, 57);
       ctx.fillStyle = '#ff4df0';
       ctx.fillText(`Deck ${this.deck.length}`, 1010, 57);
+      ctx.fillStyle = '#ffd86a';
+      ctx.fillText(`Relics ${this.relics.length}`, 1150, 57);
     }
   }
 
@@ -870,8 +998,20 @@ export class Game {
       const spriteW = e.id === 'toxic_drone_hound' ? 255 : 240;
       const spriteH = e.id === 'toxic_drone_hound' ? 300 : 325;
       const img = this.assets.get(e.art);
-      const uiY = spriteTop - 118;
+      const uiY = spriteTop - 132;
       this.shadow(ctx, x, 704, 175, 36, e.color);
+      const enemyIndex = this.enemies.indexOf(e);
+      this.buttons.push(new Button('enemyTarget', x - 130, spriteTop - 15, 260, spriteH + 35, e.name, { index: enemyIndex }, e.color));
+      if (enemyIndex === this.selectedTargetIndex) {
+        ctx.save();
+        ctx.shadowColor = '#ffd86a';
+        ctx.shadowBlur = 28;
+        roundRect(ctx, x - 128, spriteTop - 18, 256, spriteH + 42, 24);
+        ctx.strokeStyle = '#ffd86a';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+      }
       ctx.fillStyle = '#fff';
       ctx.font = '900 18px system-ui';
       ctx.textAlign = 'center';
@@ -879,8 +1019,11 @@ export class Game {
       this.panel(ctx, x - 104, uiY + 12, 208, 56, e.color, .76);
       ctx.fillStyle = e.color;
       ctx.font = '900 15px system-ui';
-      ctx.fillText(`Intent: ${e.intent} ${e.damage}`, x, uiY + 47);
+      const intent = e.intentPlan || { label: e.intent, value: e.damage };
+      const intentText = intent.type === 'shield' ? `${intent.label} +${intent.value} Block` : intent.type === 'buff' ? `${intent.label} Buff` : intent.type === 'debuff' ? `${intent.label} Weak` : `${intent.label} ${intent.value || ''}`;
+      ctx.fillText(`Intent: ${intentText}`, x, uiY + 47, 190);
       this.hpBar(ctx, x - 105, uiY + 77, 210, 18, e.hp, e.maxHp, '#ff4767', false);
+      if (e.block > 0) this.badge(ctx, x + 118, uiY + 78, e.block, '#54f8ff');
       this.drawStatuses(ctx, e, x, uiY + 118);
       if (img) {
         ctx.save();
@@ -1001,183 +1144,164 @@ export class Game {
     this.drawBackground(ctx, 'map_data_vault', 'MAP');
     this.drawTopHud(ctx);
     ctx.fillStyle = '#e8fdff';
-    ctx.font = '950 36px system-ui';
+    ctx.font = '950 38px system-ui';
     ctx.textAlign = 'left';
     ctx.fillText('SECTOR 7 // DATA-VAULT ROUTE', 58, 136);
-    ctx.fillStyle = 'rgba(232,253,255,.78)';
-    ctx.font = '800 16px system-ui';
-    ctx.fillText('Choose your next route. Secret bosses are optional high-risk nodes.', 62, 166);
-    const pts = this.mapPoints();
+    const nodeById = Object.fromEntries(MAP_NODES.map(n => [n.id, n]));
     ctx.save();
-    ctx.strokeStyle = 'rgba(84,248,255,.35)';
-    ctx.lineWidth = 3;
-    ctx.shadowColor = '#54f8ff';
-    ctx.shadowBlur = 12;
-    for (let c = 0; c < RUN_MAP_COLUMNS.length - 1; c++) {
-      const a = pts.filter(p => p.col === c);
-      const b = pts.filter(p => p.col === c + 1);
-      a.forEach(pa => b.forEach(pb => {
+    ctx.lineWidth = 4;
+    for (const n of MAP_NODES) {
+      for (const nextId of n.next || []) {
+        const to = nodeById[nextId];
+        if (!to) continue;
+        const activeLine = this.completedNodes.includes(n.id) || this.availableNodes.includes(n.id);
+        ctx.strokeStyle = activeLine ? 'rgba(84,248,255,.62)' : 'rgba(84,248,255,.20)';
+        ctx.shadowColor = activeLine ? '#54f8ff' : 'transparent';
+        ctx.shadowBlur = activeLine ? 12 : 0;
         ctx.beginPath();
-        ctx.moveTo(pa.x, pa.y);
-        ctx.bezierCurveTo(pa.x + 55, pa.y, pb.x - 55, pb.y, pb.x, pb.y);
+        ctx.moveTo(n.x, n.y);
+        const mx = (n.x + to.x) / 2;
+        ctx.bezierCurveTo(mx, n.y, mx, to.y, to.x, to.y);
         ctx.stroke();
-      }));
+      }
     }
     ctx.restore();
-    pts.forEach(p => this.drawNode(ctx, p));
+    MAP_NODES.forEach(p => this.drawNode(ctx, p));
+    this.panel(ctx, 1260, 130, 260, 150, '#54f8ff', .42);
+    ctx.fillStyle = '#aefcff';
+    ctx.font = '900 16px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('Choose any glowing node.', 1390, 170);
+    ctx.fillText('Secret boss nodes are optional.', 1390, 205);
+    ctx.fillStyle = '#ffd86a';
+    ctx.fillText(`${this.credits} run credits`, 1390, 240);
     this.button(ctx, 'menu', 1330, 812, 210, 54, 'MENU', '#54f8ff');
   }
 
-  mapPoints() {
-    const top = 250;
-    const gapX = 132;
-    return RUN_MAP_COLUMNS.flatMap((nodes, col) => {
-      const count = nodes.length;
-      const yStart = count === 1 ? 475 : count === 2 ? 390 : 315;
-      const yGap = count === 1 ? 0 : count === 2 ? 150 : 120;
-      return nodes.map((node, row) => ({ ...node, col, row, x: 140 + col * gapX, y: yStart + row * yGap + Math.sin((col + row) * .8) * 16 }));
-    });
-  }
-
   drawNode(ctx, p) {
-    const color = p.type === 'boss' ? '#ff315e' : p.type === 'secretBoss' ? '#ff315e' : p.type === 'shop' ? '#ffd86a' : p.type === 'rest' ? '#8cff3f' : p.type === 'elite' ? '#ff4df0' : p.type === 'event' ? '#b164ff' : '#54f8ff';
-    const active = p.col === this.node;
-    const done = p.col < this.node;
-    const icon = { battle: '⚔', elite: '☠', rest: '✚', shop: '◈', event: '?', boss: '☢', secretBoss: '☣' }[p.type] || '?';
+    const color = p.type === 'boss' ? '#ff315e' : p.type === 'secret' ? '#ff4df0' : p.type === 'shop' ? '#ffd86a' : p.type === 'rest' ? '#8cff3f' : p.type === 'elite' ? '#ff4df0' : p.type === 'event' ? '#80dfff' : '#54f8ff';
+    const active = this.availableNodes.includes(p.id);
+    const done = this.completedNodes.includes(p.id);
+    const locked = !active && !done;
+    const icon = { battle: '⚔', elite: '☠', rest: '✚', shop: '◈', event: '?', boss: '☢', secret: '☣' }[p.type] || '?';
     ctx.save();
-    ctx.globalAlpha = done ? .28 : active ? 1 : .55;
+    ctx.globalAlpha = done ? .42 : locked ? .34 : 1;
     ctx.shadowColor = color;
-    ctx.shadowBlur = active ? 28 : 11;
-    const size = p.type === 'boss' || p.type === 'secretBoss' ? 86 : 74;
-    roundRect(ctx, p.x - size / 2, p.y - size / 2, size, size, 20);
+    ctx.shadowBlur = active ? 30 : 12;
+    roundRect(ctx, p.x - 44, p.y - 44, 88, 88, 22);
     ctx.fillStyle = 'rgba(3,8,18,.88)';
     ctx.fill();
     ctx.strokeStyle = color;
     ctx.lineWidth = active ? 4 : 2;
     ctx.stroke();
     ctx.fillStyle = color;
-    ctx.font = `950 ${p.type === 'boss' || p.type === 'secretBoss' ? 31 : 27}px system-ui`;
+    ctx.font = '950 31px system-ui';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(icon, p.x, p.y - 2);
+    ctx.fillText(done ? '✓' : icon, p.x, p.y - 2);
     ctx.fillStyle = '#fff';
     ctx.font = '950 12px system-ui';
-    ctx.fillText(p.label || p.type.toUpperCase(), p.x, p.y + size / 2 + 23);
+    ctx.fillText(p.type === 'secret' ? 'SECRET' : p.type.toUpperCase(), p.x, p.y + 63);
     ctx.restore();
-    if (active) this.buttons.push(new Button('node', p.x - size / 2 - 10, p.y - size / 2 - 10, size + 20, size + 50, p.type, { type: p.type }, color));
+    if (active) this.buttons.push(new Button('node', p.x - 56, p.y - 56, 112, 132, p.type, { type: p.type, node: p }, color));
   }
 
   drawShop(ctx) {
     this.drawBackground(ctx, 'shop_blacknet_market', 'SHOP');
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,.55)';
-    ctx.fillRect(0, 0, W, H);
-    ctx.restore();
     ctx.fillStyle = '#ff4df0';
-    ctx.font = '950 44px system-ui';
+    ctx.font = '950 46px system-ui';
     ctx.textAlign = 'center';
     ctx.shadowColor = '#ff4df0';
-    ctx.shadowBlur = 20;
-    ctx.fillText('BLACKNET MARKET', W / 2, 78);
+    ctx.shadowBlur = 22;
+    ctx.fillText('BLACKNET MARKET', W / 2, 76);
     ctx.shadowBlur = 0;
-    this.panel(ctx, 42, 28, 255, 58, '#ffd86a', .84);
+    this.panel(ctx, 38, 34, 250, 58, '#ffd86a', .72);
     ctx.fillStyle = '#ffd86a';
-    ctx.font = '950 22px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${this.credits} CREDITS`, 170, 61);
-    // Mask the fake credits baked into the shop concept art so only earned credits matter.
-    this.panel(ctx, 1300, 24, 250, 64, '#54f8ff', .82);
-    ctx.fillStyle = '#e8fdff';
-    ctx.font = '900 16px system-ui';
-    ctx.fillText('RUN CREDITS', 1425, 47);
-    ctx.fillStyle = '#ffd86a';
-    ctx.font = '950 22px system-ui';
-    ctx.fillText(`${this.credits}`, 1425, 70);
+    ctx.font = '950 23px system-ui';
+    ctx.fillText(`${this.credits} CREDITS`, 163, 66);
 
-    ctx.fillStyle = '#9ff';
-    ctx.font = '950 18px system-ui';
+    ctx.fillStyle = '#aefcff';
+    ctx.font = '950 20px system-ui';
     ctx.textAlign = 'left';
-    ctx.fillText('CARDS', 96, 128);
+    ctx.fillText('CARDS', 160, 132);
     this.shopCards.forEach((slot, i) => {
-      const x = 92 + i * 174;
+      const x = 135 + i * 205;
       const y = 150;
-      const hot = this.mouse.x >= x && this.mouse.x <= x + 140 && this.mouse.y >= y && this.mouse.y <= y + 214;
-      this.drawCard(ctx, slot.id, x, hot ? y - 10 : y, 140, 188, !slot.sold && this.credits >= slot.price, hot);
-      ctx.fillStyle = slot.sold ? '#8a8a8a' : this.credits >= slot.price ? '#ffd86a' : '#ff6a7d';
-      ctx.font = '950 18px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText(slot.sold ? 'SOLD' : `◈ ${slot.price}`, x + 70, y + 214);
-      if (!slot.sold) this.buttons.push(new Button('shopCard', x, y - 12, 140, 228, slot.id, { slot }, '#ffd86a'));
+      this.drawCard(ctx, slot.id, x, y, 140, 188, !slot.sold, false);
+      this.priceTag(ctx, x + 70, y + 220, slot.sold ? 'SOLD' : slot.price, slot.sold ? '#888' : '#ffd86a');
+      if (!slot.sold) this.buttons.push(new Button('shopCard', x, y, 140, 232, slot.id, { slot }, '#ffd86a'));
     });
 
-    this.panel(ctx, 72, 420, 1455, 310, '#54f8ff', .72);
-    ctx.fillStyle = '#e8fdff';
+    this.panel(ctx, 90, 430, 1420, 285, '#54f8ff', .62);
+    ctx.fillStyle = '#aefcff';
     ctx.font = '950 20px system-ui';
     ctx.textAlign = 'left';
-    ctx.fillText('RELICS / PROTOCOL CHIPS', 105, 458);
+    ctx.fillText('RELICS / PROTOCOL CHIPS', 130, 470);
     this.shopRelics.forEach((slot, i) => {
-      const x = 105 + i * 235;
-      this.shopItemPanel(ctx, x, 482, 205, 116, slot.name, slot.text, slot.price, slot.color, slot.sold, 'shopRelic', { slot });
+      const relic = RELIC_DB[slot.id];
+      const x = 130 + i * 255;
+      this.shopItem(ctx, x, 500, 210, 130, relic.name, relic.text, slot.price, relic.color, slot.sold);
+      if (!slot.sold) this.buttons.push(new Button('shopRelic', x, 500, 210, 150, relic.name, { slot }, relic.color));
     });
 
-    ctx.fillStyle = '#e8fdff';
+    ctx.fillStyle = '#aefcff';
     ctx.font = '950 20px system-ui';
     ctx.textAlign = 'left';
-    ctx.fillText('UTILITY / SERVICES', 105, 640);
+    ctx.fillText('UTILITIES / SERVICES', 900, 470);
     this.shopUtilities.forEach((slot, i) => {
-      const x = 105 + i * 235;
-      this.shopItemPanel(ctx, x, 663, 205, 88, slot.name, slot.text, slot.price, slot.color, slot.sold, 'shopUtility', { slot });
+      const item = UTILITY_DB[slot.id];
+      const x = 900 + (i % 2) * 245;
+      const y = 500 + Math.floor(i / 2) * 125;
+      this.shopItem(ctx, x, y, 210, 96, item.name, item.text, slot.price, item.color, slot.sold);
+      if (!slot.sold || slot.id === 'remove_card') this.buttons.push(new Button('shopUtility', x, y, 210, 108, item.name, { slot }, item.color));
     });
-    this.shopItemPanel(ctx, 830, 663, 225, 88, 'Remove Card', 'Choose 1 card from deck to remove.', REMOVE_CARD_PRICE, '#ff4df0', false, 'shopRemove', { price: REMOVE_CARD_PRICE });
-    this.shopItemPanel(ctx, 1080, 663, 225, 88, 'Refresh Shop', 'Reroll cards, relics and utilities.', SHOP_REFRESH_PRICE, '#ffd86a', false, 'shopRefresh', {});
-    this.button(ctx, 'leaveShop', 680, 804, 240, 56, 'LEAVE SHOP', '#54f8ff');
+
+    this.button(ctx, 'refreshShop', 1030, 785, 220, 58, 'REFRESH 25', '#ffd86a');
+    this.button(ctx, 'leaveShop', 1280, 785, 220, 58, 'LEAVE SHOP', '#54f8ff');
   }
 
-  shopItemPanel(ctx, x, y, w, h, title, text, price, color, sold, buttonId, data) {
-    this.panel(ctx, x, y, w, h, color, sold ? .28 : .62);
-    ctx.fillStyle = sold ? '#999' : '#fff';
+  shopItem(ctx, x, y, w, h, title, text, price, color, sold = false) {
+    this.panel(ctx, x, y, w, h, sold ? '#777' : color, .64);
+    ctx.save();
+    ctx.globalAlpha = sold ? .45 : 1;
+    ctx.fillStyle = '#fff';
     ctx.font = '950 16px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(sold ? `${title} SOLD` : title, x + w / 2, y + 26, w - 16);
-    ctx.fillStyle = '#aefcff';
+    ctx.fillText(title, x + w / 2, y + 28, w - 16);
+    ctx.fillStyle = '#dff';
     ctx.font = '800 12px system-ui';
-    this.wrapText(ctx, text, x + w / 2, y + 50, w - 20, 15, 2);
-    ctx.fillStyle = this.credits >= price ? '#ffd86a' : '#ff6a7d';
-    ctx.font = '950 16px system-ui';
-    ctx.fillText(`◈ ${price}`, x + w / 2, y + h - 18);
-    if (!sold) this.buttons.push(new Button(buttonId, x, y, w, h, title, data, color));
+    this.wrapText(ctx, text, x + w / 2, y + 57, w - 18, 15, 2);
+    this.priceTag(ctx, x + w / 2, y + h - 16, sold ? 'SOLD' : price, sold ? '#888' : '#ffd86a');
+    ctx.restore();
+  }
+
+  priceTag(ctx, x, y, value, color) {
+    ctx.fillStyle = color;
+    ctx.font = '950 18px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(typeof value === 'number' ? `◈ ${value}` : String(value), x, y);
   }
 
   drawRemove(ctx) {
     this.drawBackground(ctx, 'shop_blacknet_market', 'REMOVE');
-    ctx.fillStyle = 'rgba(0,0,0,.68)';
-    ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#ff4df0';
     ctx.font = '950 42px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('REMOVE ONE CARD', W / 2, 92);
-    ctx.fillStyle = '#e8fdff';
-    ctx.font = '800 18px system-ui';
-    ctx.fillText(`Cost: ${this.pendingRemovePrice} credits. Choose carefully.`, W / 2, 128);
-    const unique = this.deck.map((id, index) => ({ id, index }));
-    const cols = 5;
-    unique.forEach((entry, i) => {
-      const col = i % cols;
+    ctx.fillText('REMOVE ONE CARD', W / 2, 90);
+    ctx.fillStyle = '#ffd86a';
+    ctx.font = '900 20px system-ui';
+    ctx.fillText(`Cost: ${UTILITY_DB.remove_card.price} credits`, W / 2, 128);
+    const cardW = 150, cardH = 205, gap = 22;
+    const cols = 6;
+    this.deck.forEach((id, i) => {
       const row = Math.floor(i / cols);
-      const x = 210 + col * 235;
-      const y = 170 + row * 170;
-      const card = CARD_DB[entry.id];
-      this.panel(ctx, x, y, 200, 130, this.cardColor(card), .62);
-      ctx.fillStyle = '#fff';
-      ctx.font = '950 17px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText(card?.title || entry.id, x + 100, y + 36, 180);
-      ctx.fillStyle = '#aefcff';
-      ctx.font = '800 13px system-ui';
-      this.wrapText(ctx, card?.text || '', x + 100, y + 67, 170, 16, 2);
-      this.buttons.push(new Button('removeCard', x, y, 200, 130, entry.id, { index: entry.index }, '#ff4df0'));
+      const col = i % cols;
+      const x = 210 + col * (cardW + gap);
+      const y = 165 + row * 238;
+      this.drawCard(ctx, id, x, y, cardW, cardH, this.credits >= UTILITY_DB.remove_card.price, false);
+      this.buttons.push(new Button('removeCard', x, y, cardW, cardH, id, { index: i }, '#ff4df0'));
     });
-    this.button(ctx, 'leaveShop', 680, 804, 240, 56, 'BACK TO SHOP', '#54f8ff');
+    this.button(ctx, 'backShop', 675, 815, 250, 56, 'BACK TO SHOP', '#54f8ff');
   }
 
   drawRest(ctx) {
