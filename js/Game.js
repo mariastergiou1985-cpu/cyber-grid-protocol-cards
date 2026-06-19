@@ -1,11 +1,36 @@
 const W = 1600;
 const H = 900;
 const SAVE_KEY = 'cyber-grid-protocol-cards-run-v1';
+const SETTINGS_KEY = 'cyber-grid-protocol-cards-settings-v1';
 const RADIOACTIVE_CLONE_ASSASSIN_ID = 'radioactive_clone_assassin';
 const BRAWLER_WARRIOR_ID = 'brawler_warrior';
 const TAEKWONDO_FIGHTER_ID = 'taekwondo_fighter';
 const SKELETON_VANGUARD_ID = 'skeleton_vanguard';
 const CYBER_ARM_HERO_ID = 'cyber_arm_hero';
+
+const DEFAULT_SETTINGS = {
+  maxFramerate: 'Auto',
+  fullscreen: false,
+  masterVolume: 85,
+  musicVolume: 70,
+  effectsVolume: 80,
+  ambientVolume: 55,
+  ambientSfx: true,
+  muteBackground: false,
+  disableParticles: false,
+  fastMode: false
+};
+
+const SETTINGS_TABS = [
+  { id: 'game', label: 'Game Settings' },
+  { id: 'input', label: 'Input Settings' },
+  { id: 'graphics', label: 'Graphics' },
+  { id: 'sound', label: 'Sound' },
+  { id: 'interface', label: 'Interface' },
+  { id: 'gameplay', label: 'Gameplay' },
+  { id: 'accessibility', label: 'Accessibility' },
+  { id: 'credits', label: 'Credits' }
+];
 
 const CARD_DB = {
   // Core starter cards
@@ -343,6 +368,10 @@ export class Game {
     this.shopCards = [];
     this.shopRelics = [];
     this.shopUtilities = [];
+    this.settings = this.loadSettings();
+    this.settingsTab = 'graphics';
+    this.menuNotice = '';
+    this.settingsNotice = '';
     this.hasSave = Boolean(safeGet(SAVE_KEY));
     this.bindEvents();
   }
@@ -375,9 +404,71 @@ export class Game {
     const dt = Math.min(0.033, (t - this.lastTime) / 1000 || 0);
     this.lastTime = t;
     this.time += dt;
-    this.fx = this.fx.filter(f => (f.life -= dt) > 0).map(f => ({ ...f, y: f.y - dt * 28 }));
+    const drift = this.settings?.fastMode ? 42 : 28;
+    this.fx = this.fx.filter(f => (f.life -= dt) > 0).map(f => ({ ...f, y: f.y - dt * drift }));
     this.draw();
     requestAnimationFrame(next => this.loop(next));
+  }
+
+  loadSettings() {
+    const raw = safeGet(SETTINGS_KEY);
+    if (!raw) return { ...DEFAULT_SETTINGS };
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_SETTINGS };
+      const settings = { ...DEFAULT_SETTINGS, ...parsed };
+      for (const key of ['masterVolume', 'musicVolume', 'effectsVolume', 'ambientVolume']) {
+        settings[key] = clamp(Number(settings[key]) || 0, 0, 100);
+      }
+      return settings;
+    } catch (err) {
+      console.warn('[settings] invalid settings', err);
+      return { ...DEFAULT_SETTINGS };
+    }
+  }
+
+  saveSettings() {
+    safeSet(SETTINGS_KEY, JSON.stringify(this.settings));
+  }
+
+  toggleSetting(key, enabled = true) {
+    if (!enabled || !(key in DEFAULT_SETTINGS) || typeof DEFAULT_SETTINGS[key] !== 'boolean') {
+      this.settingsNotice = 'This option is not supported in the browser build yet.';
+      return;
+    }
+    this.settings[key] = !this.settings[key];
+    this.saveSettings();
+    if (key === 'fullscreen') this.applyFullscreenPreference();
+  }
+
+  setSliderSetting(key, value, enabled = true) {
+    if (!enabled || !(key in DEFAULT_SETTINGS)) return;
+    this.settings[key] = clamp(Math.round(value), 0, 100);
+    this.saveSettings();
+  }
+
+  cycleSetting(key, values, enabled = true) {
+    if (!enabled || !(key in DEFAULT_SETTINGS) || !Array.isArray(values) || !values.length) {
+      this.settingsNotice = 'This display option is fixed for this canvas build.';
+      return;
+    }
+    const current = values.indexOf(this.settings[key]);
+    this.settings[key] = values[(current + 1 + values.length) % values.length];
+    this.saveSettings();
+  }
+
+  applyFullscreenPreference() {
+    try {
+      if (typeof document === 'undefined') return;
+      if (this.settings.fullscreen && document.fullscreenElement !== this.canvas) {
+        this.canvas.requestFullscreen?.();
+      } else if (!this.settings.fullscreen && document.fullscreenElement) {
+        document.exitFullscreen?.();
+      }
+    } catch (err) {
+      console.warn('[settings] fullscreen unavailable', err);
+      this.settingsNotice = 'Fullscreen is unavailable in this browser context.';
+    }
   }
 
   newRun() {
@@ -1204,12 +1295,24 @@ export class Game {
       if (!button.contains(x, y)) continue;
       switch (button.id) {
         case 'newRun': this.newRun(); return;
-        case 'continue': this.continueRun(); return;
+        case 'continue':
+          if (this.hasSave) this.continueRun();
+          else this.menuNotice = 'No saved run';
+          return;
         case 'gallery': this.state = 'gallery'; return;
+        case 'deckLibrary': this.state = 'deckLibrary'; return;
+        case 'settings': this.state = 'settings'; this.settingsNotice = ''; return;
+        case 'quit': this.menuNotice = 'Quit is unavailable in browser build'; return;
         case 'menu': this.state = 'menu'; return;
         case 'hudMenu': this.state = 'menu'; return;
         case 'hudMap': this.floatText(820, 125, this.state === 'map' ? 'MAP ACTIVE' : 'MAP LOCKED', '#54f8ff'); return;
         case 'hudDeck': this.floatText(820, 125, `DECK ${this.deck.length} / RELICS ${this.relics.length}`, '#ffd86a'); return;
+        case 'settingsTab': this.settingsTab = button.data.id || 'graphics'; this.settingsNotice = ''; return;
+        case 'settingToggle': this.toggleSetting(button.data.key, button.data.enabled); return;
+        case 'settingSlider': this.setSliderSetting(button.data.key, ((x - button.data.x) / button.data.w) * 100, button.data.enabled); return;
+        case 'settingCycle': this.cycleSetting(button.data.key, button.data.values, button.data.enabled); return;
+        case 'settingsReturn': this.state = 'menu'; return;
+        case 'exitGame': this.settingsNotice = 'Exit game is unavailable in browser build'; return;
         case 'endTurn': this.endTurn(); return;
         case 'reward': this.takeReward(button.data.id); return;
         case 'relicReward': this.takeRelicReward(button.data.id); return;
@@ -1247,6 +1350,8 @@ export class Game {
     this.cardRects = [];
     ctx.clearRect(0, 0, W, H);
     if (this.state === 'menu') this.drawMenu(ctx);
+    else if (this.state === 'settings') this.drawSettingsMenu(ctx);
+    else if (this.state === 'deckLibrary') this.drawDeckLibrary(ctx);
     else if (this.state === 'gallery') this.drawGallery(ctx);
     else if (this.state === 'combat') this.drawCombat(ctx);
     else if (this.state === 'reward') this.drawReward(ctx);
@@ -1307,25 +1412,399 @@ export class Game {
 
   drawMenu(ctx) {
     this.drawBackground(ctx, 'combat_neon_city', 'MAIN MENU');
+    const skeleton = this.assets?.get?.('char_skeleton_vanguard');
+    ctx.save();
+    const vignette = ctx.createRadialGradient(540, 440, 120, 540, 440, 780);
+    vignette.addColorStop(0, 'rgba(84,248,255,.10)');
+    vignette.addColorStop(.48, 'rgba(255,77,240,.10)');
+    vignette.addColorStop(1, 'rgba(0,0,0,.62)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    ctx.save();
     ctx.textAlign = 'center';
     ctx.fillStyle = '#e8fdff';
-    ctx.font = '950 78px Georgia, serif';
+    ctx.font = '950 82px Georgia, serif';
     ctx.shadowColor = '#54f8ff';
-    ctx.shadowBlur = 36;
-    ctx.fillText('CYBER-GRID', W / 2, 170);
-    ctx.fillStyle = '#ffd86a';
-    ctx.font = '950 42px system-ui';
-    ctx.fillText('PROTOCOL CARDS', W / 2, 222);
+    ctx.shadowBlur = 34;
+    ctx.fillText('CYBER GRID', 515, 154);
+    ctx.fillStyle = '#cfd8de';
+    ctx.font = '950 34px system-ui';
+    ctx.shadowColor = '#ff4df0';
+    ctx.shadowBlur = 18;
+    ctx.fillText('PROTOCOL CARDS', 515, 204);
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = .88;
+    if (skeleton) {
+      ctx.shadowColor = '#cfd8de';
+      ctx.shadowBlur = 28;
+      drawContain(ctx, skeleton, 1050, 210, 360, 520);
+    }
+    ctx.restore();
+    this.drawMenuSignboard(ctx, 1085, 120, 365, 620);
+
+    this.panel(ctx, 438, 250, 420, 418, '#54f8ff', .58);
+    this.drawMenuButton(ctx, 'newRun', 485, 288, 326, 58, 'NEW RUN', '#54f8ff');
+    this.drawMenuButton(ctx, 'continue', 485, 360, 326, 58, this.hasSave ? 'CONTINUE' : 'NO SAVED RUN', this.hasSave ? '#ffd86a' : '#687884', !this.hasSave);
+    this.drawMenuButton(ctx, 'deckLibrary', 485, 432, 326, 58, 'DECK LIBRARY', '#b164ff');
+    this.drawMenuButton(ctx, 'settings', 485, 504, 326, 58, 'SETTINGS', '#54f8ff');
+    this.drawMenuButton(ctx, 'quit', 485, 576, 326, 58, 'QUIT', '#ff4df0');
+
+    this.panel(ctx, 452, 700, 392, 64, '#ffd86a', .38);
+    ctx.fillStyle = 'rgba(232,253,255,.70)';
+    ctx.font = '850 13px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Cyber-grid save protocol ready', 648, 724);
+    this.drawMenuButton(ctx, 'gallery', 590, 742, 116, 30, 'HEROES', '#ffd86a');
+    this.drawMenuNotice(ctx, 648, 812);
+  }
+
+  drawMenuSignboard(ctx, x, y, w, h) {
+    ctx.save();
+    ctx.shadowColor = '#54f8ff';
+    ctx.shadowBlur = 26;
+    roundRect(ctx, x, y, w, h, 24);
+    ctx.fillStyle = 'rgba(2,9,18,.54)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(84,248,255,.58)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
     ctx.shadowBlur = 0;
-    this.panel(ctx, 550, 280, 500, 355, '#54f8ff', .70);
-    this.button(ctx, 'newRun', 625, 325, 350, 68, 'NEW RUN', '#54f8ff');
-    this.button(ctx, 'continue', 625, 415, 350, 68, this.hasSave ? 'CONTINUE RUN' : 'CONTINUE LOCKED', this.hasSave ? '#ffd86a' : '#555');
-    this.button(ctx, 'gallery', 625, 505, 350, 68, 'CHARACTER GALLERY', '#ff4df0');
-    ctx.fillStyle = 'rgba(232,253,255,.72)';
-    ctx.font = '800 18px system-ui';
-    ctx.fillText('GitHub Pages / localhost ready browser build', W / 2, 710);
-    ctx.fillStyle = 'rgba(84,248,255,.92)';
-    ctx.fillText('InkSpireM Visuals', W / 2, 754);
+    ctx.strokeStyle = 'rgba(255,255,255,.12)';
+    for (let i = 0; i < 7; i++) {
+      const py = y + 72 + i * 70;
+      ctx.beginPath();
+      ctx.moveTo(x + 34, py);
+      ctx.lineTo(x + w - 34, py + (i % 2 ? 14 : -12));
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#cfd8de';
+    ctx.font = '950 22px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('GRID TOWER', x + w / 2, y + 54);
+    ctx.fillStyle = '#54f8ff';
+    ctx.font = '850 13px system-ui';
+    ctx.fillText('RUN STATUS // ONLINE', x + w / 2, y + h - 44);
+    ctx.restore();
+  }
+
+  drawMenuButton(ctx, id, x, y, w, h, label, color = '#54f8ff', disabled = false) {
+    const hot = !disabled && this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y && this.mouse.y <= y + h;
+    this.buttons.push(new Button(id, x, y, w, h, label, { disabled }, color));
+    ctx.save();
+    ctx.globalAlpha = disabled ? .68 : 1;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = hot ? 28 : 14;
+    roundRect(ctx, x, y, w, h, 12);
+    ctx.fillStyle = hot ? 'rgba(16,42,62,.96)' : 'rgba(2,9,18,.86)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = hot ? 3 : 1.4;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = disabled ? 'rgba(232,253,255,.58)' : '#f6ffff';
+    ctx.font = h < 40 ? '950 13px system-ui' : '950 20px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x + w / 2, y + h / 2 + .5, w - 22);
+    ctx.restore();
+  }
+
+  drawMenuNotice(ctx, x, y) {
+    if (!this.menuNotice) return;
+    ctx.save();
+    ctx.fillStyle = '#ffd86a';
+    ctx.shadowColor = '#ffd86a';
+    ctx.shadowBlur = 12;
+    ctx.font = '900 18px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(this.menuNotice, x, y, 520);
+    ctx.restore();
+  }
+
+  drawDeckLibrary(ctx) {
+    this.drawBackground(ctx, 'map_data_vault', 'DECK LIBRARY');
+    this.drawTopHud(ctx, true);
+    this.panel(ctx, 350, 210, 900, 440, '#b164ff', .72);
+    ctx.fillStyle = '#e8fdff';
+    ctx.font = '950 44px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('DECK LIBRARY', W / 2, 300);
+    ctx.fillStyle = '#b164ff';
+    ctx.font = '950 21px system-ui';
+    ctx.fillText('Coming soon', W / 2, 356);
+    ctx.fillStyle = 'rgba(232,253,255,.78)';
+    ctx.font = '800 17px system-ui';
+    this.wrapText(ctx, 'The run deck and character card archive will appear here without changing combat or reward systems.', W / 2, 420, 720, 25, 3);
+    this.button(ctx, 'menu', 675, 545, 250, 58, 'RETURN', '#54f8ff');
+  }
+
+  drawSettingsMenu(ctx) {
+    this.drawBackground(ctx, 'shop_blacknet_market', 'SETTINGS');
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#e8fdff';
+    ctx.font = '950 54px system-ui';
+    ctx.shadowColor = '#54f8ff';
+    ctx.shadowBlur = 24;
+    ctx.fillText('SETTINGS', W / 2, 92);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#b164ff';
+    ctx.font = '900 15px system-ui';
+    ctx.fillText('Cyber-grid control matrix', W / 2, 122);
+    ctx.restore();
+
+    this.panel(ctx, 70, 155, 305, 610, '#54f8ff', .62);
+    SETTINGS_TABS.forEach((tab, i) => this.drawSettingsTab(ctx, tab, 96, 188 + i * 64, 252, 46));
+
+    this.panel(ctx, 410, 155, 1115, 610, '#54f8ff', .54);
+    const tab = this.settingsTab || 'graphics';
+    if (tab === 'graphics') this.drawGraphicsSettings(ctx, 455, 205);
+    else if (tab === 'sound') this.drawSoundSettings(ctx, 455, 205);
+    else if (tab === 'interface') this.drawInterfaceSettings(ctx, 455, 205);
+    else if (tab === 'gameplay') this.drawGameplaySettings(ctx, 455, 205);
+    else if (tab === 'accessibility') this.drawAccessibilitySettings(ctx, 455, 205);
+    else if (tab === 'credits') this.drawCreditsSettings(ctx, 455, 205);
+    else this.drawMiscSettings(ctx, 455, 205, tab);
+
+    this.drawSettingsNotice(ctx, 960, 794);
+    this.button(ctx, 'settingsReturn', 980, 820, 210, 54, 'RETURN', '#54f8ff');
+    this.button(ctx, 'exitGame', 1225, 820, 230, 54, 'EXIT GAME', '#ff4df0');
+  }
+
+  drawSettingsTab(ctx, tab, x, y, w, h) {
+    const active = this.settingsTab === tab.id;
+    const hot = this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y && this.mouse.y <= y + h;
+    const color = active ? '#ffd86a' : hot ? '#54f8ff' : '#88a8b8';
+    this.buttons.push(new Button('settingsTab', x, y, w, h, tab.label, { id: tab.id }, color));
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = active || hot ? 18 : 6;
+    roundRect(ctx, x, y, w, h, 12);
+    ctx.fillStyle = active ? 'rgba(40,32,8,.84)' : 'rgba(2,9,18,.72)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = active ? 2.4 : 1.2;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = active ? '#fff6c2' : '#e8fdff';
+    ctx.font = '900 15px system-ui';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tab.label, x + 18, y + h / 2);
+    ctx.restore();
+  }
+
+  drawSettingsHeading(ctx, title, subtitle, x, y) {
+    ctx.save();
+    ctx.fillStyle = '#e8fdff';
+    ctx.font = '950 31px system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText(title, x, y);
+    ctx.fillStyle = 'rgba(174,252,255,.72)';
+    ctx.font = '850 14px system-ui';
+    ctx.fillText(subtitle, x, y + 28);
+    ctx.restore();
+  }
+
+  drawGraphicsSettings(ctx, x, y) {
+    this.drawSettingsHeading(ctx, 'Graphics', 'Canvas display options. Unsupported items are marked TODO.', x, y);
+    this.drawDropdownSetting(ctx, 'resolution', 'Resolution', '1600 x 900 Canvas', x, y + 70, 320, false);
+    this.drawDropdownSetting(ctx, 'maxFramerate', 'Max Framerate', this.settings.maxFramerate, x + 380, y + 70, 260, true, ['Auto', '60 FPS', '120 FPS']);
+    this.drawCheckbox(ctx, 'fullscreen', 'Fullscreen', x, y + 155, true);
+    this.drawCheckbox(ctx, 'borderlessFullscreen', 'Borderless Fullscreen', x + 380, y + 155, false);
+    this.drawCheckbox(ctx, 'vsync', 'VSync', x, y + 215, false);
+    this.drawCheckbox(ctx, 'screenShake', 'Screen Shake', x + 380, y + 215, false);
+    this.drawCheckbox(ctx, 'highQualityEffects', 'Bloom / High Quality Effects', x, y + 275, false);
+  }
+
+  drawSoundSettings(ctx, x, y) {
+    this.drawSettingsHeading(ctx, 'Sound', 'Saved volume preferences for future audio hooks.', x, y);
+    this.drawSlider(ctx, 'masterVolume', 'Master Volume', x, y + 78, 430);
+    this.drawSlider(ctx, 'musicVolume', 'Music Volume', x, y + 148, 430);
+    this.drawSlider(ctx, 'effectsVolume', 'Effects Volume', x, y + 218, 430);
+    this.drawSlider(ctx, 'ambientVolume', 'Ambient Volume', x, y + 288, 430);
+    this.drawCheckbox(ctx, 'ambientSfx', 'Ambient Sound Effects', x + 560, y + 86, true);
+    this.drawCheckbox(ctx, 'muteBackground', 'Mute While In Background', x + 560, y + 146, true);
+  }
+
+  drawInterfaceSettings(ctx, x, y) {
+    this.drawSettingsHeading(ctx, 'Interface', 'Visual preferences. Functional toggles are saved immediately.', x, y);
+    this.drawCheckbox(ctx, 'displaySummedDamage', 'Display summed damage', x, y + 76, false);
+    this.drawCheckbox(ctx, 'displayBlockedDamage', 'Display blocked damage', x + 440, y + 76, false);
+    this.drawCheckbox(ctx, 'disableSingleCardConfirm', 'Disable confirmation when choosing 1 card', x, y + 136, false);
+    this.drawCheckbox(ctx, 'disableParticles', 'Disable particle effects', x + 440, y + 136, true);
+    this.drawCheckbox(ctx, 'fastMode', 'Fast mode', x, y + 196, true);
+    this.drawCheckbox(ctx, 'showQuickKeys', 'Show card quick select keys', x + 440, y + 196, false);
+    this.drawCheckbox(ctx, 'biggerText', 'Bigger text', x, y + 256, false);
+  }
+
+  drawGameplaySettings(ctx, x, y) {
+    this.drawSettingsHeading(ctx, 'Gameplay', 'Run systems are preserved; gameplay-only settings are placeholders.', x, y);
+    this.drawInfoRow(ctx, x, y + 78, 720, 'Autosave', 'Enabled through the existing run save system.', '#54f8ff');
+    this.drawCheckbox(ctx, 'longPressConfirm', 'Long-press confirmations', x, y + 160, false);
+    this.drawCheckbox(ctx, 'controllerConfirm', 'Controller confirmation prompts', x + 440, y + 160, false);
+  }
+
+  drawAccessibilitySettings(ctx, x, y) {
+    this.drawSettingsHeading(ctx, 'Accessibility', 'Accessibility hooks can expand without affecting combat logic.', x, y);
+    this.drawCheckbox(ctx, 'biggerText', 'Bigger text', x, y + 76, false);
+    this.drawCheckbox(ctx, 'disableParticles', 'Reduce particle effects', x + 440, y + 76, true);
+    this.drawCheckbox(ctx, 'screenShake', 'Disable screen shake', x, y + 136, false);
+  }
+
+  drawCreditsSettings(ctx, x, y) {
+    this.drawSettingsHeading(ctx, 'Credits', 'Current project identity and visual credits.', x, y);
+    this.drawInfoRow(ctx, x, y + 80, 760, 'Game', 'Cyber-Grid: Protocol Cards', '#54f8ff');
+    this.drawInfoRow(ctx, x, y + 150, 760, 'Visual Direction', 'InkSpireM cyberpunk card battler UI', '#ff4df0');
+    this.drawInfoRow(ctx, x, y + 220, 760, 'Build', 'Canvas browser build with safe local fallbacks', '#ffd86a');
+  }
+
+  drawMiscSettings(ctx, x, y, tab) {
+    const label = SETTINGS_TABS.find(t => t.id === tab)?.label || 'Game Settings';
+    this.drawSettingsHeading(ctx, label, 'General preferences and unavailable platform options.', x, y);
+    this.drawDropdownSetting(ctx, 'language', 'Language', 'English', x, y + 75, 300, false);
+    this.drawInfoRow(ctx, x, y + 155, 760, 'Data Upload', 'Omitted because this game does not support gameplay data upload.', '#b164ff');
+    this.drawInfoRow(ctx, x, y + 225, 760, 'Browser Exit', 'Use the browser tab controls; forced close is disabled.', '#ffd86a');
+  }
+
+  drawInfoRow(ctx, x, y, w, label, text, color) {
+    ctx.save();
+    roundRect(ctx, x, y, w, 48, 12);
+    ctx.fillStyle = 'rgba(2,9,18,.70)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.font = '950 14px system-ui';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x + 18, y + 24, 180);
+    ctx.fillStyle = '#e8fdff';
+    ctx.font = '800 14px system-ui';
+    ctx.fillText(text, x + 180, y + 24, w - 205);
+    ctx.restore();
+  }
+
+  drawDropdownSetting(ctx, key, label, value, x, y, w, enabled = false, values = []) {
+    const h = 50;
+    const color = enabled ? '#54f8ff' : '#687884';
+    const hot = enabled && this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y && this.mouse.y <= y + h;
+    this.buttons.push(new Button('settingCycle', x, y, w, h, label, { key, values, enabled }, color));
+    ctx.save();
+    ctx.globalAlpha = enabled ? 1 : .68;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = hot ? 18 : 8;
+    roundRect(ctx, x, y, w, h, 12);
+    ctx.fillStyle = 'rgba(2,9,18,.76)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = hot ? 2.2 : 1.2;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(232,253,255,.70)';
+    ctx.font = '850 11px system-ui';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label.toUpperCase(), x + 16, y + 15);
+    ctx.fillStyle = enabled ? '#f6ffff' : 'rgba(232,253,255,.58)';
+    ctx.font = '950 16px system-ui';
+    ctx.fillText(String(value), x + 16, y + 34, w - 52);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = color;
+    ctx.fillText(enabled ? 'CYCLE' : 'TODO', x + w - 14, y + 34);
+    ctx.restore();
+  }
+
+  drawCheckbox(ctx, key, label, x, y, enabled = true) {
+    const size = 26;
+    const checked = Boolean(this.settings[key]);
+    const color = enabled ? '#54f8ff' : '#687884';
+    const hot = enabled && this.mouse.x >= x && this.mouse.x <= x + 390 && this.mouse.y >= y && this.mouse.y <= y + 36;
+    this.buttons.push(new Button('settingToggle', x, y, 390, 36, label, { key, enabled }, color));
+    ctx.save();
+    ctx.globalAlpha = enabled ? 1 : .60;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = hot ? 16 : 7;
+    roundRect(ctx, x, y + 4, size, size, 7);
+    ctx.fillStyle = checked ? 'rgba(84,248,255,.28)' : 'rgba(2,9,18,.82)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = hot ? 2.4 : 1.4;
+    ctx.stroke();
+    if (checked) {
+      ctx.strokeStyle = '#e8fdff';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x + 7, y + 17);
+      ctx.lineTo(x + 12, y + 24);
+      ctx.lineTo(x + 22, y + 10);
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = enabled ? '#e8fdff' : 'rgba(232,253,255,.56)';
+    ctx.font = '900 15px system-ui';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x + 40, y + 18, 300);
+    if (!enabled) {
+      ctx.fillStyle = '#ffd86a';
+      ctx.font = '850 11px system-ui';
+      ctx.fillText('TODO', x + 340, y + 18);
+    }
+    ctx.restore();
+  }
+
+  drawSlider(ctx, key, label, x, y, w, enabled = true) {
+    const value = clamp(Number(this.settings[key]) || 0, 0, 100);
+    const trackY = y + 34;
+    const color = enabled ? '#ffd86a' : '#687884';
+    this.buttons.push(new Button('settingSlider', x, y, w, 48, label, { key, x, w, enabled }, color));
+    ctx.save();
+    ctx.globalAlpha = enabled ? 1 : .6;
+    ctx.fillStyle = '#e8fdff';
+    ctx.font = '900 15px system-ui';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x, y + 12);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = color;
+    ctx.fillText(`${value}%`, x + w, y + 12);
+    roundRect(ctx, x, trackY, w, 10, 5);
+    ctx.fillStyle = 'rgba(2,9,18,.82)';
+    ctx.fill();
+    roundRect(ctx, x, trackY, w * value / 100, 10, 5);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(x + w * value / 100, trackY + 5, 11, 0, Math.PI * 2);
+    ctx.fillStyle = '#101923';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  drawSettingsNotice(ctx, x, y) {
+    if (!this.settingsNotice) return;
+    ctx.save();
+    ctx.fillStyle = '#ffd86a';
+    ctx.font = '900 16px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = '#ffd86a';
+    ctx.shadowBlur = 12;
+    ctx.fillText(this.settingsNotice, x, y, 720);
+    ctx.restore();
   }
 
   drawGallery(ctx) {
@@ -2178,6 +2657,7 @@ export class Game {
 
   drawEffects(ctx) {
     for (const f of this.fx) {
+      if (this.settings?.disableParticles && f.kind === 'burst') continue;
       const alpha = clamp(f.life, 0, 1);
       ctx.save();
       ctx.globalAlpha = alpha;
