@@ -968,20 +968,19 @@ export class Game {
     const ch = this.player ?? CHARACTERS[this.selectedCharacterIndex];
     const img = this.assets.get(ch.art);
     const bob = Math.sin(this.time * 2.0) * 4;
-    this.shadow(ctx, 250, 704, 230, 42, ch.color);
+    this.shadow(ctx, 250, 698, 196, 34, ch.color);
     if (img) {
       ctx.save();
       ctx.shadowColor = ch.color;
-      ctx.shadowBlur = 18;
-      // Smaller, cleaner hero scale. Bottom-aligned to the combat ground.
-      drawContain(ctx, img, 75, 240 + bob, 360, 470);
+      ctx.shadowBlur = 16;
+      drawContain(ctx, img, 98, 292 + bob, 304, 396);
       ctx.restore();
     } else {
-      this.fallbackUnit(ctx, 250, 500 + bob, ch.color, 'HERO');
+      this.fallbackUnit(ctx, 250, 535 + bob, ch.color, 'HERO');
     }
-    this.hpBar(ctx, 125, 713, 250, 20, this.player.hp, this.player.maxHp, '#ff4767');
-    if (this.block > 0) this.badge(ctx, 410, 715, this.block, '#54f8ff');
-    this.drawPowerBadges(ctx, 140, 758);
+    this.hpBar(ctx, 145, 707, 210, 16, this.player.hp, this.player.maxHp, '#ff4767');
+    if (this.block > 0) this.badge(ctx, 386, 709, this.block, '#54f8ff');
+    this.drawPowerBadges(ctx, 150, 748);
   }
 
   drawEnemies(ctx) {
@@ -994,45 +993,46 @@ export class Game {
     const xs = layouts[alive.length] || layouts[3];
     alive.forEach((e, i) => {
       const x = xs[i];
-      const spriteTop = i % 2 ? 265 : 285;
-      const spriteW = e.id === 'toxic_drone_hound' ? 255 : 240;
-      const spriteH = e.id === 'toxic_drone_hound' ? 300 : 325;
+      const spriteTop = i % 2 ? 300 : 318;
+      const spriteW = e.id === 'toxic_drone_hound' ? 210 : 200;
+      const spriteH = e.id === 'toxic_drone_hound' ? 250 : 275;
       const img = this.assets.get(e.art);
-      const uiY = spriteTop - 132;
-      this.shadow(ctx, x, 704, 175, 36, e.color);
+      const uiY = spriteTop - 136;
+      const targetW = spriteW + 34;
+      this.shadow(ctx, x, 696, 142, 30, e.color);
       const enemyIndex = this.enemies.indexOf(e);
-      this.buttons.push(new Button('enemyTarget', x - 130, spriteTop - 15, 260, spriteH + 35, e.name, { index: enemyIndex }, e.color));
+      this.buttons.push(new Button('enemyTarget', x - targetW / 2, spriteTop - 16, targetW, spriteH + 34, e.name, { index: enemyIndex }, e.color));
       if (enemyIndex === this.selectedTargetIndex) {
         ctx.save();
         ctx.shadowColor = '#ffd86a';
-        ctx.shadowBlur = 28;
-        roundRect(ctx, x - 128, spriteTop - 18, 256, spriteH + 42, 24);
+        ctx.shadowBlur = 22;
+        roundRect(ctx, x - targetW / 2, spriteTop - 18, targetW, spriteH + 38, 20);
         ctx.strokeStyle = '#ffd86a';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 3;
         ctx.stroke();
         ctx.restore();
       }
       ctx.fillStyle = '#fff';
-      ctx.font = '900 18px system-ui';
+      ctx.font = '900 16px system-ui';
       ctx.textAlign = 'center';
       ctx.fillText(e.name, x, uiY);
-      this.panel(ctx, x - 104, uiY + 12, 208, 56, e.color, .76);
+      this.panel(ctx, x - 86, uiY + 11, 172, 42, e.color, .74);
       ctx.fillStyle = e.color;
-      ctx.font = '900 15px system-ui';
+      ctx.font = '900 13px system-ui';
       const intent = e.intentPlan || { label: e.intent, value: e.damage };
       const intentText = intent.type === 'shield' ? `${intent.label} +${intent.value} Block` : intent.type === 'buff' ? `${intent.label} Buff` : intent.type === 'debuff' ? `${intent.label} Weak` : `${intent.label} ${intent.value || ''}`;
-      ctx.fillText(`Intent: ${intentText}`, x, uiY + 47, 190);
-      this.hpBar(ctx, x - 105, uiY + 77, 210, 18, e.hp, e.maxHp, '#ff4767', false);
-      if (e.block > 0) this.badge(ctx, x + 118, uiY + 78, e.block, '#54f8ff');
-      this.drawStatuses(ctx, e, x, uiY + 118);
+      ctx.fillText(`Intent: ${intentText}`, x, uiY + 38, 154);
+      this.hpBar(ctx, x - 86, uiY + 64, 172, 8, e.hp, e.maxHp, '#ff4767', false);
+      if (e.block > 0) this.badge(ctx, x + 104, uiY + 66, e.block, '#54f8ff', 24);
+      this.drawStatuses(ctx, e, x, uiY + 96);
       if (img) {
         ctx.save();
         ctx.shadowColor = e.color;
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 14;
         drawContain(ctx, img, x - spriteW / 2, spriteTop, spriteW, spriteH);
         ctx.restore();
       } else {
-        this.fallbackUnit(ctx, x, 495, e.color, 'ENEMY');
+        this.fallbackUnit(ctx, x, 535, e.color, 'ENEMY');
       }
     });
   }
@@ -1051,21 +1051,21 @@ export class Game {
   }
 
   drawCombatUi(ctx) {
-    this.panel(ctx, 30, 762, 1540, 116, '#54f8ff', .55);
-    this.energyOrb(ctx, 92, 821);
-    this.pile(ctx, 170, 785, 'DRAW', this.drawPile.length, '#54f8ff');
-    this.pile(ctx, 1360, 785, 'DISCARD', this.discard.length, '#ff4df0');
-    this.button(ctx, 'endTurn', 1465, 792, 90, 74, 'END\nTURN', '#ffd86a');
-    const cardW = 164;
+    this.panel(ctx, 34, 776, 1532, 98, '#54f8ff', .52);
+    this.energyOrb(ctx, 92, 828, 48);
+    this.pile(ctx, 170, 796, 'DRAW', this.drawPile.length, '#54f8ff');
+    this.pile(ctx, 1360, 796, 'DISCARD', this.discard.length, '#ff4df0');
+    this.button(ctx, 'endTurn', 1466, 806, 88, 58, 'END\nTURN', '#ffd86a');
+    const cardW = 150;
     const cardH = 205;
-    const gap = 15;
+    const gap = 13;
     const total = this.hand.length * cardW + Math.max(0, this.hand.length - 1) * gap;
     const start = W / 2 - total / 2;
     this.hand.forEach((id, i) => {
       const x = start + i * (cardW + gap);
-      const yBase = 672;
+      const yBase = 674;
       const hot = this.mouse.x >= x && this.mouse.x <= x + cardW && this.mouse.y >= yBase - 30 && this.mouse.y <= yBase + cardH;
-      const y = hot ? yBase - 26 : yBase;
+      const y = hot ? yBase - 24 : yBase;
       this.drawCard(ctx, id, x, y, cardW, cardH, this.energy >= (CARD_DB[id]?.cost ?? 99), hot);
       this.cardRects.push({ index: i, x, y, w: cardW, h: cardH });
     });
@@ -1374,16 +1374,16 @@ export class Game {
     ctx.restore();
   }
 
-  badge(ctx, x, y, value, color) {
+  badge(ctx, x, y, value, color, radius = 32) {
     ctx.save();
     ctx.shadowColor = color;
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = radius > 28 ? 18 : 14;
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x, y, 32, 0, Math.PI * 2);
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#04121c';
-    ctx.font = '950 20px system-ui';
+    ctx.font = `950 ${radius > 28 ? 20 : 16}px system-ui`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(value, x, y);
@@ -1391,34 +1391,34 @@ export class Game {
   }
 
   pile(ctx, x, y, label, n, color) {
-    this.panel(ctx, x, y, 110, 84, color, .62);
+    this.panel(ctx, x, y, 102, 70, color, .60);
     ctx.fillStyle = '#fff';
-    ctx.font = '950 15px system-ui';
+    ctx.font = '950 13px system-ui';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(label, x + 55, y + 25);
-    ctx.font = '950 28px system-ui';
-    ctx.fillText(n, x + 55, y + 58);
+    ctx.fillText(label, x + 51, y + 21);
+    ctx.font = '950 24px system-ui';
+    ctx.fillText(n, x + 51, y + 50);
   }
 
-  energyOrb(ctx, x, y) {
+  energyOrb(ctx, x, y, radius = 55) {
     ctx.save();
     ctx.shadowColor = '#54f8ff';
-    ctx.shadowBlur = 24;
+    ctx.shadowBlur = 22;
     ctx.fillStyle = 'rgba(0,45,70,.96)';
     ctx.beginPath();
-    ctx.arc(x, y, 55, 0, Math.PI * 2);
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#54f8ff';
     ctx.lineWidth = 3;
     ctx.stroke();
     ctx.fillStyle = '#fff';
-    ctx.font = '950 34px system-ui';
+    ctx.font = `950 ${Math.round(radius * .62)}px system-ui`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${this.energy}/${this.maxEnergy}`, x, y - 5);
-    ctx.font = '950 13px system-ui';
-    ctx.fillText('ENERGY', x, y + 36);
+    ctx.fillText(`${this.energy}/${this.maxEnergy}`, x, y - radius * .08);
+    ctx.font = `950 ${Math.round(radius * .24)}px system-ui`;
+    ctx.fillText('ENERGY', x, y + radius * .65);
     ctx.restore();
   }
 
