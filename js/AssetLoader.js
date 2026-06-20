@@ -85,6 +85,13 @@ export const ASSET_MANIFEST = {
   enemy_glitch_raven: './assets/enemies/glitch_raven.png',
   enemy_scrap_reaper: './assets/enemies/scrap_reaper.png',
   enemy_corrupted_sentinel: './assets/enemies/corrupted_sentinel.png',
+  enemy_scrap_mech_gunner: './assets/enemies/scrap_mech_gunner.png',
+  enemy_frostbyte_wraith: './assets/enemies/frostbyte_wraith.png',
+  enemy_volt_spider_bot: './assets/enemies/volt_spider_bot.png',
+  enemy_blacknet_assassin: './assets/enemies/blacknet_assassin.png',
+  enemy_plague_android: './assets/enemies/plague_android.png',
+  enemy_shield_core_guardian: './assets/enemies/shield_core_guardian.png',
+  enemy_data_vault_overseer: './assets/enemies/data_vault_overseer.png',
 
   relic_emergency_patch: './assets/relics/emergency_patch.png',
   relic_overclock_core: './assets/relics/overclock_core.png',

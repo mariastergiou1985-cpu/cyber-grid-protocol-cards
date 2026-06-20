@@ -182,13 +182,136 @@ const CHARACTERS = [
   }
 ];
 
-const ENEMIES = [
-  { id: 'toxic_drone_hound', name: 'Toxic Drone Hound', hp: 38, art: 'enemy_toxic_drone_hound', intent: 'Bite', damage: 7, color: '#8cff3f' },
-  { id: 'neon_cultist', name: 'Neon Cultist', hp: 42, art: 'enemy_neon_cultist', intent: 'Dark Bolt', damage: 8, color: '#ff4df0' },
-  { id: 'glitch_raven', name: 'Glitch Raven', hp: 30, art: 'enemy_glitch_raven', intent: 'Glitch Peck', damage: 6, color: '#54f8ff' },
-  { id: 'scrap_reaper', name: 'Scrap Reaper', hp: 46, art: 'enemy_scrap_reaper', intent: 'Scythe', damage: 10, color: '#ffd86a' },
-  { id: 'corrupted_sentinel', name: 'Corrupted Sentinel', hp: 65, art: 'enemy_corrupted_sentinel', intent: 'Core Slam', damage: 13, color: '#b164ff' }
-];
+const ENEMY_DB = {
+  corrupted_sentinel: {
+    id: 'corrupted_sentinel', name: 'Corrupted Sentinel', hp: 34, damage: 7, art: 'enemy_corrupted_sentinel', color: '#b164ff',
+    intents: [
+      { type: 'attack', label: 'Attack', value: 7 },
+      { type: 'shield', label: 'Guard', value: 6 },
+      { type: 'attackDebuff', label: 'Suppressive Fire', value: 4, weak: 1 }
+    ]
+  },
+  toxic_drone_hound: {
+    id: 'toxic_drone_hound', name: 'Toxic Drone Hound', hp: 28, damage: 8, art: 'enemy_toxic_drone_hound', color: '#8cff3f',
+    intents: [
+      { type: 'poison', label: 'Toxic Bite', value: 5, poison: 2 },
+      { type: 'attack', label: 'Lunge', value: 8 },
+      { type: 'debuff', label: 'Corrosive Howl', status: 'Vulnerable', value: 1 }
+    ]
+  },
+  neon_cultist: {
+    id: 'neon_cultist', name: 'Neon Cultist', hp: 30, damage: 6, art: 'enemy_neon_cultist', color: '#ff4df0',
+    intents: [
+      { type: 'debuff', label: 'Hex Weak', status: 'Weak', value: 2 },
+      { type: 'attack', label: 'Dark Pulse', value: 6 },
+      { type: 'buff', label: 'Ritual Charge', strength: 2 }
+    ]
+  },
+  scrap_mech_gunner: {
+    id: 'scrap_mech_gunner', name: 'Scrap Mech Gunner', hp: 38, damage: 9, art: 'enemy_scrap_mech_gunner', color: '#ffd86a',
+    intents: [
+      { type: 'multiAttack', label: 'Burst Fire', value: 3, hits: 3 },
+      { type: 'chargeAttack', label: 'Charged Shot', nextValue: 14 },
+      { type: 'shield', label: 'Armor Plate', value: 7 }
+    ]
+  },
+  frostbyte_wraith: {
+    id: 'frostbyte_wraith', name: 'Frostbyte Wraith', hp: 32, damage: 5, art: 'enemy_frostbyte_wraith', color: '#80dfff',
+    intents: [
+      { type: 'attackStatus', label: 'Frost Touch', value: 5, status: 'Frostbite', amount: 2 },
+      { type: 'debuff', label: 'Chill Field', status: 'Weak', value: 1 },
+      { type: 'evade', label: 'Phase', block: 8 }
+    ]
+  },
+  volt_spider_bot: {
+    id: 'volt_spider_bot', name: 'Volt Spider Bot', hp: 26, damage: 4, art: 'enemy_volt_spider_bot', color: '#ffe14a',
+    intents: [
+      { type: 'attackStatus', label: 'Shock Bite', value: 4, status: 'Shock', amount: 2 },
+      { type: 'multiAttack', label: 'Chain Spark', value: 3, hits: 2 },
+      { type: 'charge', label: 'Static Charge', bonus: 4 }
+    ]
+  },
+  blacknet_assassin: {
+    id: 'blacknet_assassin', name: 'Blacknet Assassin', hp: 42, damage: 12, art: 'enemy_blacknet_assassin', color: '#ff4df0',
+    intents: [
+      { type: 'attack', label: 'Blade Rush', value: 12 },
+      { type: 'evade', label: 'Evasive Step', block: 6 },
+      { type: 'mark', label: 'Mark Target', multiplier: 1.5 }
+    ]
+  },
+  plague_android: {
+    id: 'plague_android', name: 'Plague Android', hp: 44, damage: 7, art: 'enemy_plague_android', color: '#8cff3f',
+    intents: [
+      { type: 'attackStatus', label: 'Plague Claw', value: 7, status: 'Radiation', amount: 2, poison: 1 },
+      { type: 'debuff', label: 'Leak Canister', status: 'Poison', value: 3 },
+      { type: 'heal', label: 'Repair Protocol', value: 6 }
+    ]
+  },
+  shield_core_guardian: {
+    id: 'shield_core_guardian', name: 'Shield Core Guardian', hp: 58, damage: 9, art: 'enemy_shield_core_guardian', color: '#54f8ff',
+    intents: [
+      { type: 'attack', label: 'Shield Bash', value: 9 },
+      { type: 'protectAll', label: 'Protect Allies', value: 6 },
+      { type: 'shield', label: 'Core Barrier', value: 12 }
+    ]
+  },
+  data_vault_overseer: {
+    id: 'data_vault_overseer', name: 'Data Vault Overseer', hp: 85, damage: 14, art: 'enemy_data_vault_overseer', color: '#ff315e',
+    spriteW: 240, spriteH: 305,
+    intents: [
+      { type: 'attack', label: 'Overseer Beam', value: 14 },
+      { type: 'summon', label: 'Summon Drone', ids: ['toxic_drone_hound', 'volt_spider_bot'] },
+      { type: 'systemBuff', label: 'System Buff', strength: 2, block: 8 },
+      { type: 'attackDebuff', label: 'Firewall Pulse', value: 8, weak: 1 }
+    ]
+  },
+  glitch_raven: {
+    id: 'glitch_raven', name: 'Glitch Raven', hp: 30, damage: 6, art: 'enemy_glitch_raven', color: '#54f8ff',
+    intents: [{ type: 'attack', label: 'Glitch Peck', value: 6 }, { type: 'debuff', label: 'Glitch', status: 'Weak', value: 1 }]
+  },
+  scrap_reaper: {
+    id: 'scrap_reaper', name: 'Scrap Reaper', hp: 46, damage: 10, art: 'enemy_scrap_reaper', color: '#ffd86a',
+    intents: [{ type: 'attackDebuff', label: 'Scythe', value: 10, weak: 1 }, { type: 'shield', label: 'Scrap Armor', value: 10 }]
+  }
+};
+
+const ENCOUNTER_TABLES = {
+  normalEarly: [
+    ['corrupted_sentinel', 'toxic_drone_hound'],
+    ['neon_cultist', 'corrupted_sentinel'],
+    ['toxic_drone_hound', 'volt_spider_bot'],
+    ['corrupted_sentinel', 'scrap_mech_gunner']
+  ],
+  normalMid: [
+    ['scrap_mech_gunner', 'neon_cultist'],
+    ['frostbyte_wraith', 'corrupted_sentinel'],
+    ['plague_android', 'toxic_drone_hound'],
+    ['shield_core_guardian', 'volt_spider_bot'],
+    ['neon_cultist', 'volt_spider_bot', 'toxic_drone_hound']
+  ],
+  normalLate: [
+    ['shield_core_guardian', 'scrap_mech_gunner', 'neon_cultist'],
+    ['plague_android', 'frostbyte_wraith'],
+    ['blacknet_assassin', 'toxic_drone_hound', 'neon_cultist'],
+    ['frostbyte_wraith', 'volt_spider_bot', 'corrupted_sentinel']
+  ],
+  elite: [
+    ['blacknet_assassin', 'neon_cultist'],
+    ['shield_core_guardian', 'scrap_mech_gunner'],
+    ['plague_android', 'frostbyte_wraith'],
+    ['blacknet_assassin', 'volt_spider_bot', 'toxic_drone_hound']
+  ],
+  secret: [
+    ['data_vault_overseer', 'shield_core_guardian'],
+    ['data_vault_overseer', 'toxic_drone_hound', 'volt_spider_bot'],
+    ['data_vault_overseer', 'neon_cultist', 'scrap_mech_gunner']
+  ],
+  boss: [
+    ['data_vault_overseer', 'shield_core_guardian'],
+    ['data_vault_overseer', 'volt_spider_bot'],
+    ['data_vault_overseer', 'neon_cultist']
+  ]
+};
 
 
 const MAP_LAYERS = [
@@ -573,22 +696,7 @@ export class Game {
 
   startCombat(kind = 'battle') {
     this.currentNodeType = kind;
-    const count = kind === 'boss' || kind === 'secret' ? 1 : kind === 'elite' ? 2 : 1 + (this.node % 3 === 0 ? 1 : 0);
-    const pool = kind === 'boss'
-      ? [{ ...ENEMIES[4], name: 'Vault Overseer', hp: 140, damage: 16, intent: 'Core Crush', color: '#ff315e' }]
-      : kind === 'secret'
-        ? [{ ...ENEMIES[4], name: 'Secret Blacknet Boss', hp: 125, damage: 15, intent: 'Hidden Protocol', color: '#ff4df0' }]
-        : kind === 'elite' ? ENEMIES.slice(2, 5) : ENEMIES.slice(0, 4);
-    this.enemies = Array.from({ length: count }, (_, i) => {
-      const tpl = copy(pool[(this.node + i) % pool.length]);
-      const bonus = kind === 'boss' ? 35 : kind === 'secret' ? 30 : kind === 'elite' ? 18 : 0;
-      tpl.maxHp = tpl.hp + bonus;
-      tpl.hp = tpl.maxHp;
-      tpl.block = 0;
-      tpl.status = {};
-      tpl.intentPlan = this.rollEnemyIntent(tpl, kind, i);
-      return tpl;
-    });
+    this.enemies = this.buildEncounter(kind);
     this.drawPile = shuffle(this.deck);
     this.discard = [];
     this.hand = [];
@@ -616,6 +724,51 @@ export class Game {
     this.drawCards(openingDraw);
     if (this.hasRelic('memory_cache')) this.floatText(340, 760, 'MEMORY CACHE +1 DRAW', RELIC_DB.memory_cache.color);
     this.state = 'combat';
+  }
+
+  buildEncounter(kind = 'battle') {
+    const ids = this.chooseEncounterIds(kind);
+    return ids.map((id, i) => {
+      const enemy = this.createEnemy(id);
+      enemy.intentPlan = this.rollEnemyIntent(enemy, kind, i);
+      return enemy;
+    });
+  }
+
+  chooseEncounterIds(kind = 'battle') {
+    let table = ENCOUNTER_TABLES.normalEarly;
+    if (kind === 'boss') table = ENCOUNTER_TABLES.boss;
+    else if (kind === 'secret') table = ENCOUNTER_TABLES.secret;
+    else if (kind === 'elite') table = ENCOUNTER_TABLES.elite;
+    else if ((this.currentLayer || 0) >= 4 || this.node >= 5) table = ENCOUNTER_TABLES.normalLate;
+    else if ((this.currentLayer || 0) >= 2 || this.node >= 3) table = ENCOUNTER_TABLES.normalMid;
+    const offset = (this.node || 0) + (this.currentLayer || 0) + this.deck.length;
+    return [...(table[offset % table.length] || ENCOUNTER_TABLES.normalEarly[0])];
+  }
+
+  createEnemy(id) {
+    const tpl = ENEMY_DB[id] || ENEMY_DB.corrupted_sentinel;
+    const enemy = copy(tpl);
+    enemy.maxHp = enemy.hp;
+    enemy.hp = enemy.maxHp;
+    enemy.block = 0;
+    enemy.status = {};
+    enemy.intentIndex = 0;
+    enemy.strength = 0;
+    enemy.staticCharge = 0;
+    enemy.marked = false;
+    enemy.chargedShot = false;
+    enemy.evasive = false;
+    return enemy;
+  }
+
+  addEnemyToCombat(id) {
+    if (!ENEMY_DB[id] || this.enemies.filter(e => e.hp > 0).length >= 3) return false;
+    const enemy = this.createEnemy(id);
+    enemy.intentPlan = this.rollEnemyIntent(enemy, this.currentNodeType, this.enemies.length);
+    this.enemies.push(enemy);
+    this.floatText(1030, 255, `${enemy.name} SUMMONED`, enemy.color);
+    return true;
   }
 
   resetStartingRelicCombatState() {
@@ -685,21 +838,12 @@ export class Game {
   }
 
   rollEnemyIntent(enemy, kind = 'battle', offset = 0) {
-    const mod = (this.node + offset + Math.floor(this.time * 10)) % 4;
-    if (kind === 'boss' || enemy.name.includes('Boss') || enemy.name.includes('Overseer')) {
-      return [
-        { type: 'attack', label: 'Core Crush', value: enemy.damage + 4 },
-        { type: 'debuff', label: 'Corrupt', value: 2 },
-        { type: 'shield', label: 'Fortify', value: 18 },
-        { type: 'attackDebuff', label: 'Rend', value: enemy.damage, weak: 1 }
-      ][mod];
-    }
-    if (enemy.id === 'toxic_drone_hound') return mod % 2 ? { type: 'poison', label: 'Toxic Bite', value: 5, poison: 2 } : { type: 'attack', label: 'Bite', value: enemy.damage };
-    if (enemy.id === 'neon_cultist') return mod % 3 === 0 ? { type: 'buff', label: 'Dark Rite', value: 3 } : { type: 'debuff', label: 'Hex', value: 1 };
-    if (enemy.id === 'glitch_raven') return mod % 2 ? { type: 'debuff', label: 'Glitch', value: 1 } : { type: 'attack', label: 'Peck', value: enemy.damage };
-    if (enemy.id === 'scrap_reaper') return mod % 2 ? { type: 'attackDebuff', label: 'Scythe', value: enemy.damage, weak: 1 } : { type: 'shield', label: 'Scrap Armor', value: 10 };
-    if (enemy.id === 'corrupted_sentinel') return mod % 2 ? { type: 'shield', label: 'Core Guard', value: 14 } : { type: 'attack', label: 'Core Slam', value: enemy.damage };
-    return { type: 'attack', label: enemy.intent || 'Attack', value: enemy.damage || 6 };
+    if (enemy.chargedShot) return { type: 'attack', label: 'Charged Shot', value: enemy.chargedShot };
+    if (enemy.marked) return { type: 'attack', label: 'Blade Rush', value: enemy.damage || 10, marked: true };
+    const intents = enemy.intents?.length ? enemy.intents : [{ type: 'attack', label: enemy.intent || 'Attack', value: enemy.damage || 6 }];
+    const idx = ((enemy.intentIndex || 0) + (this.node || 0) + offset) % intents.length;
+    enemy.intentIndex = (enemy.intentIndex || 0) + 1;
+    return copy(intents[idx]);
   }
 
   normalizeRelics(ids) {
@@ -866,9 +1010,15 @@ export class Game {
 
   damageEnemy(enemy, amount) {
     if (!enemy || amount <= 0) return 0;
-    const absorbed = Math.min(enemy.block || 0, amount);
+    let incoming = amount;
+    if (enemy.evasive) {
+      incoming = Math.ceil(incoming * 0.5);
+      enemy.evasive = false;
+      this.floatText(1030, 430, 'EVADED', enemy.color);
+    }
+    const absorbed = Math.min(enemy.block || 0, incoming);
     enemy.block = Math.max(0, (enemy.block || 0) - absorbed);
-    const dealt = Math.max(0, amount - absorbed);
+    const dealt = Math.max(0, incoming - absorbed);
     enemy.hp -= dealt;
     return dealt;
   }
@@ -1072,7 +1222,6 @@ export class Game {
   endTurn() {
     if (this.state !== 'combat' || this.turn !== 'player') return;
     this.turn = 'enemy';
-    let total = 0;
     if (this.playerStatus?.Poison) {
       const p = this.playerStatus.Poison;
       this.losePlayerHp(p, `Poison -${p}`, '#8cff3f');
@@ -1094,35 +1243,19 @@ export class Game {
         continue;
       }
       const intent = e.intentPlan || this.rollEnemyIntent(e, this.currentNodeType);
-      if (intent.type === 'attack' || intent.type === 'attackDebuff') {
-        let dmg = intent.value || e.damage || 0;
-        if (e.status?.Weak) dmg = Math.ceil(dmg * 0.70);
-        if (this.playerStatus?.Weak) dmg = Math.ceil(dmg * 1.20);
-        total += dmg;
-        if (intent.weak) this.playerStatus.Weak = (this.playerStatus.Weak || 0) + intent.weak;
-      } else if (intent.type === 'poison') {
-        total += intent.value || 0;
-        this.playerStatus.Poison = (this.playerStatus.Poison || 0) + (intent.poison || 1);
-        this.floatText(270, 480, `Poison +${intent.poison || 1}`, '#8cff3f');
-      } else if (intent.type === 'shield') {
-        e.block = (e.block || 0) + (intent.value || 8);
-        this.floatText(1000, 470, `+${intent.value || 8} BLOCK`, e.color);
-      } else if (intent.type === 'buff') {
-        e.damage = (e.damage || 0) + (intent.value || 2);
-        e.block = (e.block || 0) + 5;
-        this.floatText(1000, 470, `BUFF +${intent.value || 2}`, e.color);
-      } else if (intent.type === 'debuff') {
-        this.playerStatus.Weak = (this.playerStatus.Weak || 0) + (intent.value || 1);
-        this.floatText(270, 480, `WEAK +${intent.value || 1}`, '#b164ff');
-      }
+      this.resolveEnemyIntent(e, intent);
+      if (this.player.hp <= 0) break;
       if (e.status?.Shock) e.status.Shock = Math.max(0, e.status.Shock - 1);
       if (e.status?.Vulnerable) e.status.Vulnerable = Math.max(0, e.status.Vulnerable - 1);
       if (e.status?.Weak) e.status.Weak = Math.max(0, e.status.Weak - 1);
       if (e.status?.Soaked) e.status.Soaked = Math.max(0, e.status.Soaked - 1);
       e.intentPlan = this.rollEnemyIntent(e, this.currentNodeType);
     }
-    this.applyIncomingDamage(total);
     if (this.playerStatus?.Weak) this.playerStatus.Weak = Math.max(0, this.playerStatus.Weak - 1);
+    if (this.playerStatus?.Vulnerable) this.playerStatus.Vulnerable = Math.max(0, this.playerStatus.Vulnerable - 1);
+    if (this.playerStatus?.Shock) this.playerStatus.Shock = Math.max(0, this.playerStatus.Shock - 1);
+    if (this.playerStatus?.Frostbite) this.playerStatus.Frostbite = Math.max(0, this.playerStatus.Frostbite - 1);
+    if (this.playerStatus?.Radiation) this.playerStatus.Radiation = Math.max(0, this.playerStatus.Radiation - 1);
     if (this.player.hp <= 0) { this.state = 'gameover'; return; }
     if (this.enemies.every(e => e.hp <= 0)) { this.winCombat(); return; }
     this.hand.forEach(id => this.discard.push(id));
@@ -1134,6 +1267,123 @@ export class Game {
     this.resetTurnRelics();
     this.drawCards(5);
     this.save();
+  }
+
+  resolveEnemyIntent(enemy, intent = {}) {
+    if (!enemy || enemy.hp <= 0) return;
+    const type = intent.type || 'attack';
+    if (type === 'attack' || type === 'attackDebuff' || type === 'attackStatus') {
+      this.resolveEnemyAttack(enemy, intent);
+      if (intent.weak) this.applyPlayerStatus('Weak', intent.weak, '#b164ff');
+      if (intent.status) this.applyPlayerStatus(intent.status, intent.amount || intent.value || 1, this.statusColor(intent.status));
+      if (intent.poison) this.applyPlayerStatus('Poison', intent.poison, '#8cff3f');
+      return;
+    }
+    if (type === 'multiAttack') {
+      const hits = Math.max(1, intent.hits || 1);
+      for (let i = 0; i < hits; i++) {
+        this.resolveEnemyAttack(enemy, intent, i);
+        if (this.player.hp <= 0) break;
+      }
+      return;
+    }
+    if (type === 'poison') {
+      this.resolveEnemyAttack(enemy, intent);
+      this.applyPlayerStatus('Poison', intent.poison || 1, '#8cff3f');
+      return;
+    }
+    if (type === 'debuff') {
+      this.applyPlayerStatus(intent.status || 'Weak', intent.value || 1, this.statusColor(intent.status || 'Weak'));
+      return;
+    }
+    if (type === 'shield') {
+      const value = Math.max(0, intent.value || 0);
+      enemy.block = (enemy.block || 0) + value;
+      this.floatText(1000, 470, `${enemy.name} +${value} BLOCK`, enemy.color);
+      return;
+    }
+    if (type === 'protectAll') {
+      const value = Math.max(0, intent.value || 0);
+      this.enemies.filter(e => e.hp > 0).forEach(e => { e.block = (e.block || 0) + value; });
+      this.floatText(1030, 470, `ALLIES +${value} BLOCK`, enemy.color);
+      return;
+    }
+    if (type === 'buff') {
+      const strength = Math.max(0, intent.strength || intent.value || 0);
+      enemy.strength = (enemy.strength || 0) + strength;
+      this.floatText(1000, 470, `${enemy.name} +${strength} STR`, enemy.color);
+      return;
+    }
+    if (type === 'systemBuff') {
+      const strength = Math.max(0, intent.strength || 0);
+      const block = Math.max(0, intent.block || 0);
+      this.enemies.filter(e => e.hp > 0).forEach(e => {
+        e.strength = (e.strength || 0) + strength;
+        e.block = (e.block || 0) + block;
+      });
+      this.floatText(1030, 470, `SYSTEM +${strength} STR +${block} BLOCK`, enemy.color);
+      return;
+    }
+    if (type === 'chargeAttack') {
+      enemy.chargedShot = intent.nextValue || 14;
+      this.floatText(1000, 470, 'CHARGING SHOT', enemy.color);
+      return;
+    }
+    if (type === 'charge') {
+      enemy.staticCharge = (enemy.staticCharge || 0) + (intent.bonus || 4);
+      this.floatText(1000, 470, `STATIC +${intent.bonus || 4}`, enemy.color);
+      return;
+    }
+    if (type === 'mark') {
+      enemy.marked = intent.multiplier || 1.5;
+      this.floatText(270, 480, 'MARKED', enemy.color);
+      return;
+    }
+    if (type === 'evade') {
+      enemy.block = (enemy.block || 0) + (intent.block || 6);
+      enemy.evasive = true;
+      this.floatText(1000, 470, `${enemy.name} EVADES`, enemy.color);
+      return;
+    }
+    if (type === 'heal') {
+      const heal = Math.max(0, intent.value || 0);
+      enemy.hp = Math.min(enemy.maxHp, enemy.hp + heal);
+      this.floatText(1000, 470, `${enemy.name} +${heal} HP`, '#8cff3f');
+      return;
+    }
+    if (type === 'summon') {
+      const options = intent.ids || [];
+      const id = options[(this.node + this.enemies.length) % Math.max(1, options.length)];
+      if (!this.addEnemyToCombat(id)) this.resolveEnemyAttack(enemy, { label: 'Fallback Beam', value: 8 });
+    }
+  }
+
+  resolveEnemyAttack(enemy, intent = {}, hitIndex = 0) {
+    let dmg = Math.max(0, intent.value || enemy.damage || 0);
+    dmg += enemy.strength || 0;
+    if (enemy.staticCharge) {
+      dmg += enemy.staticCharge;
+      enemy.staticCharge = 0;
+    }
+    if (enemy.marked) {
+      dmg = Math.ceil(dmg * Number(enemy.marked || 1.5));
+      enemy.marked = false;
+    }
+    if (enemy.chargedShot && intent.label === 'Charged Shot') enemy.chargedShot = false;
+    if (enemy.status?.Weak) dmg = Math.ceil(dmg * 0.70);
+    if (this.playerStatus?.Weak) dmg = Math.ceil(dmg * 1.20);
+    if (this.playerStatus?.Vulnerable) dmg = Math.ceil(dmg * 1.20);
+    this.floatText(285, 430 + hitIndex * 24, `${enemy.name}: ${intent.label || 'Attack'}`, enemy.color);
+    this.applyIncomingDamage(dmg);
+  }
+
+  applyPlayerStatus(name, amount = 1, color = '#b164ff') {
+    if (!name || !amount) return;
+    this.playerStatus = this.playerStatus || {};
+    const value = Math.max(0, amount || 0);
+    if (!value) return;
+    this.playerStatus[name] = (this.playerStatus[name] || 0) + value;
+    this.floatText(270, 480, `${name} +${value}`, color);
   }
 
   winCombat() {
@@ -1287,7 +1537,7 @@ export class Game {
   }
 
   statusColor(name) {
-    return { Poison: '#8cff3f', Shock: '#ffe14a', Frost: '#80dfff', Frostbite: '#80dfff', Burn: '#ff7740', 'Rad Mark': '#cfff42', Soaked: '#5fd7ff', Vulnerable: '#ffb86a', Weak: '#b164ff' }[name] || '#fff';
+    return { Poison: '#8cff3f', Toxin: '#8cff3f', Shock: '#ffe14a', Frost: '#80dfff', Frostbite: '#80dfff', Chill: '#80dfff', Burn: '#ff7740', 'Rad Mark': '#cfff42', Radiation: '#cfff42', Soaked: '#5fd7ff', Vulnerable: '#ffb86a', Weak: '#b164ff' }[name] || '#fff';
   }
 
   handleClick(x, y) {
@@ -2098,8 +2348,8 @@ export class Game {
     alive.forEach((e, i) => {
       const x = xs[i];
       const spriteTop = i % 2 ? 300 : 318;
-      const spriteW = e.id === 'toxic_drone_hound' ? 210 : 200;
-      const spriteH = e.id === 'toxic_drone_hound' ? 250 : 275;
+      const spriteW = e.spriteW || (e.id === 'toxic_drone_hound' ? 205 : 190);
+      const spriteH = e.spriteH || (e.id === 'toxic_drone_hound' ? 245 : 260);
       const img = this.assets.get(e.art);
       const uiY = spriteTop - 136;
       const targetW = spriteW + 34;
@@ -2124,7 +2374,7 @@ export class Game {
       ctx.fillStyle = e.color;
       ctx.font = '900 13px system-ui';
       const intent = e.intentPlan || { label: e.intent, value: e.damage };
-      const intentText = intent.type === 'shield' ? `${intent.label} +${intent.value} Block` : intent.type === 'buff' ? `${intent.label} Buff` : intent.type === 'debuff' ? `${intent.label} Weak` : `${intent.label} ${intent.value || ''}`;
+      const intentText = this.formatEnemyIntent(intent);
       ctx.fillText(`Intent: ${intentText}`, x, uiY + 38, 154);
       this.hpBar(ctx, x - 86, uiY + 64, 172, 8, e.hp, e.maxHp, '#ff4767', false);
       if (e.block > 0) this.badge(ctx, x + 104, uiY + 66, e.block, '#54f8ff', 24);
@@ -2139,6 +2389,26 @@ export class Game {
         this.fallbackUnit(ctx, x, 535, e.color, 'ENEMY');
       }
     });
+  }
+
+  formatEnemyIntent(intent = {}) {
+    const label = intent.label || 'Action';
+    if (intent.type === 'shield') return `${label} +${intent.value || 0} Block`;
+    if (intent.type === 'protectAll') return `${label} +${intent.value || 0} All`;
+    if (intent.type === 'buff') return `${label} +${intent.strength || intent.value || 0} Str`;
+    if (intent.type === 'systemBuff') return `${label} Buff All`;
+    if (intent.type === 'debuff') return `${label} ${intent.status || 'Weak'} +${intent.value || 1}`;
+    if (intent.type === 'poison') return `${label} ${intent.value || 0} +Poison`;
+    if (intent.type === 'multiAttack') return `${label} ${intent.value || 0}x${intent.hits || 1}`;
+    if (intent.type === 'attackDebuff') return `${label} ${intent.value || 0} +Weak`;
+    if (intent.type === 'attackStatus') return `${label} ${intent.value || 0} +${intent.status || 'Status'}`;
+    if (intent.type === 'chargeAttack') return `${label} Next ${intent.nextValue || 0}`;
+    if (intent.type === 'charge') return `${label} +${intent.bonus || 0}`;
+    if (intent.type === 'mark') return `${label} +50%`;
+    if (intent.type === 'evade') return `${label} +${intent.block || 0} Block`;
+    if (intent.type === 'heal') return `${label} +${intent.value || 0} HP`;
+    if (intent.type === 'summon') return `${label}`;
+    return `${label} ${intent.value || ''}`.trim();
   }
 
   drawPowerBadges(ctx, x, y) {
