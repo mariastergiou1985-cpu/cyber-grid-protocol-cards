@@ -3,6 +3,8 @@ export const ASSET_MANIFEST = {
   combat_toxic_factory: './assets/backgrounds/combat_toxic_factory.png',
   map_data_vault: './assets/backgrounds/map_data_vault.png',
   shop_blacknet_market: './assets/backgrounds/shop_blacknet_market.png',
+  main_menu_skeleton_silver: './assets/main_menu/cyber_grid_main_menu_skeleton_silver.png',
+  settings_screen_reference: './assets/ui/settings/settings_screen_reference.png',
 
   card_neon_slash: './assets/cards/neon_slash.png',
   card_grid_guard: './assets/cards/grid_guard.png',

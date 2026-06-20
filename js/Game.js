@@ -1671,56 +1671,30 @@ export class Game {
   }
 
   drawMenu(ctx) {
-    this.drawBackground(ctx, 'combat_neon_city', 'MAIN MENU');
-    const skeleton = this.assets?.get?.('char_skeleton_vanguard');
+    this.drawBackground(ctx, 'main_menu_skeleton_silver', 'MAIN MENU');
     ctx.save();
-    const vignette = ctx.createRadialGradient(540, 440, 120, 540, 440, 780);
-    vignette.addColorStop(0, 'rgba(84,248,255,.10)');
-    vignette.addColorStop(.48, 'rgba(255,77,240,.10)');
-    vignette.addColorStop(1, 'rgba(0,0,0,.62)');
+    const vignette = ctx.createRadialGradient(560, 520, 140, 560, 520, 720);
+    vignette.addColorStop(0, 'rgba(0,0,0,.02)');
+    vignette.addColorStop(.48, 'rgba(0,0,0,.08)');
+    vignette.addColorStop(1, 'rgba(0,0,0,.46)');
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, W, H);
     ctx.restore();
 
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#e8fdff';
-    ctx.font = '950 82px Georgia, serif';
-    ctx.shadowColor = '#54f8ff';
-    ctx.shadowBlur = 34;
-    ctx.fillText('CYBER GRID', 515, 154);
-    ctx.fillStyle = '#cfd8de';
-    ctx.font = '950 34px system-ui';
-    ctx.shadowColor = '#ff4df0';
-    ctx.shadowBlur = 18;
-    ctx.fillText('PROTOCOL CARDS', 515, 204);
-    ctx.restore();
+    this.drawMenuButton(ctx, 'newRun', 432, 394, 300, 54, 'NEW RUN', '#54f8ff');
+    this.drawMenuButton(ctx, 'continue', 432, 461, 300, 54, this.hasSave ? 'CONTINUE' : 'NO SAVED RUN', this.hasSave ? '#ffd86a' : '#687884', !this.hasSave);
+    this.drawMenuButton(ctx, 'deckLibrary', 432, 528, 300, 54, 'DECK LIBRARY', '#b164ff');
+    this.drawMenuButton(ctx, 'settings', 432, 595, 300, 54, 'SETTINGS', '#54f8ff');
+    this.drawMenuButton(ctx, 'quit', 432, 662, 300, 54, 'QUIT', '#ff4df0');
 
-    ctx.save();
-    ctx.globalAlpha = .88;
-    if (skeleton) {
-      ctx.shadowColor = '#cfd8de';
-      ctx.shadowBlur = 28;
-      drawContain(ctx, skeleton, 1050, 210, 360, 520);
-    }
-    ctx.restore();
-    this.drawMenuSignboard(ctx, 1085, 120, 365, 620);
-
-    this.panel(ctx, 438, 250, 420, 418, '#54f8ff', .58);
-    this.drawMenuButton(ctx, 'newRun', 485, 288, 326, 58, 'NEW RUN', '#54f8ff');
-    this.drawMenuButton(ctx, 'continue', 485, 360, 326, 58, this.hasSave ? 'CONTINUE' : 'NO SAVED RUN', this.hasSave ? '#ffd86a' : '#687884', !this.hasSave);
-    this.drawMenuButton(ctx, 'deckLibrary', 485, 432, 326, 58, 'DECK LIBRARY', '#b164ff');
-    this.drawMenuButton(ctx, 'settings', 485, 504, 326, 58, 'SETTINGS', '#54f8ff');
-    this.drawMenuButton(ctx, 'quit', 485, 576, 326, 58, 'QUIT', '#ff4df0');
-
-    this.panel(ctx, 452, 700, 392, 64, '#ffd86a', .38);
+    this.panel(ctx, 30, 805, 348, 64, '#ffd86a', .30);
     ctx.fillStyle = 'rgba(232,253,255,.70)';
     ctx.font = '850 13px system-ui';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Cyber-grid save protocol ready', 648, 724);
-    this.drawMenuButton(ctx, 'gallery', 590, 742, 116, 30, 'HEROES', '#ffd86a');
-    this.drawMenuNotice(ctx, 648, 812);
+    ctx.fillText('Cyber-grid save protocol ready', 204, 829);
+    this.drawMenuButton(ctx, 'gallery', 226, 846, 116, 30, 'HEROES', '#ffd86a');
+    this.drawMenuNotice(ctx, 560, 748);
   }
 
   drawMenuSignboard(ctx, x, y, w, h) {
@@ -1760,7 +1734,7 @@ export class Game {
     ctx.shadowColor = color;
     ctx.shadowBlur = hot ? 28 : 14;
     roundRect(ctx, x, y, w, h, 12);
-    ctx.fillStyle = hot ? 'rgba(16,42,62,.96)' : 'rgba(2,9,18,.86)';
+    ctx.fillStyle = hot ? 'rgba(16,42,62,.72)' : 'rgba(2,9,18,.38)';
     ctx.fill();
     ctx.strokeStyle = color;
     ctx.lineWidth = hot ? 3 : 1.4;
@@ -1805,7 +1779,9 @@ export class Game {
   }
 
   drawSettingsMenu(ctx) {
-    this.drawBackground(ctx, 'shop_blacknet_market', 'SETTINGS');
+    this.drawBackground(ctx, 'settings_screen_reference', 'SETTINGS');
+    ctx.fillStyle = 'rgba(0,5,12,.42)';
+    ctx.fillRect(0, 0, W, H);
     ctx.save();
     ctx.textAlign = 'center';
     ctx.fillStyle = '#e8fdff';
@@ -1819,10 +1795,10 @@ export class Game {
     ctx.fillText('Cyber-grid control matrix', W / 2, 122);
     ctx.restore();
 
-    this.panel(ctx, 70, 155, 305, 610, '#54f8ff', .62);
+    this.panel(ctx, 70, 155, 305, 610, '#54f8ff', .46);
     SETTINGS_TABS.forEach((tab, i) => this.drawSettingsTab(ctx, tab, 96, 188 + i * 64, 252, 46));
 
-    this.panel(ctx, 410, 155, 1115, 610, '#54f8ff', .54);
+    this.panel(ctx, 410, 155, 1115, 610, '#54f8ff', .48);
     const tab = this.settingsTab || 'graphics';
     if (tab === 'graphics') this.drawGraphicsSettings(ctx, 455, 205);
     else if (tab === 'sound') this.drawSoundSettings(ctx, 455, 205);
@@ -2697,6 +2673,8 @@ export class Game {
 
   drawShop(ctx) {
     this.drawBackground(ctx, 'shop_blacknet_market', 'SHOP');
+    ctx.fillStyle = 'rgba(0,4,10,.30)';
+    ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#ff4df0';
     ctx.font = '950 46px system-ui';
     ctx.textAlign = 'center';
@@ -2704,49 +2682,55 @@ export class Game {
     ctx.shadowBlur = 22;
     ctx.fillText('BLACKNET MARKET', W / 2, 76);
     ctx.shadowBlur = 0;
-    this.panel(ctx, 38, 34, 250, 58, '#ffd86a', .72);
-    ctx.fillStyle = '#ffd86a';
-    ctx.font = '950 23px system-ui';
-    ctx.fillText(`${this.credits} CREDITS`, 163, 66);
 
+    this.panel(ctx, 90, 116, 1040, 292, '#54f8ff', .38);
     ctx.fillStyle = '#aefcff';
     ctx.font = '950 20px system-ui';
     ctx.textAlign = 'left';
-    ctx.fillText('CARDS', 160, 132);
+    ctx.fillText('CARDS', 125, 144);
     this.shopCards.forEach((slot, i) => {
-      const x = 135 + i * 205;
-      const y = 150;
+      const x = 125 + i * 190;
+      const y = 158;
       this.drawCard(ctx, slot.id, x, y, 140, 188, !slot.sold, false);
       this.priceTag(ctx, x + 70, y + 220, slot.sold ? 'SOLD' : slot.price, slot.sold ? '#888' : '#ffd86a');
       if (!slot.sold) this.buttons.push(new Button('shopCard', x, y, 140, 232, slot.id, { slot }, '#ffd86a'));
     });
 
-    this.panel(ctx, 90, 430, 1420, 285, '#54f8ff', .62);
+    this.panel(ctx, 1165, 116, 345, 292, '#ff4df0', .40);
+    ctx.fillStyle = '#ffd86a';
+    ctx.font = '950 25px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${this.credits} CREDITS`, 1338, 164);
+    ctx.fillStyle = 'rgba(232,253,255,.74)';
+    ctx.font = '850 13px system-ui';
+    this.wrapText(ctx, 'Broker inventory refreshes from the current run card pool, relic pool, and utility services.', 1338, 204, 270, 18, 3);
+    this.button(ctx, 'refreshShop', 1228, 286, 220, 52, 'REFRESH 25', '#ffd86a');
+    this.button(ctx, 'leaveShop', 1228, 350, 220, 52, 'LEAVE SHOP', '#54f8ff');
+
+    this.panel(ctx, 90, 440, 690, 280, '#54f8ff', .40);
     ctx.fillStyle = '#aefcff';
     ctx.font = '950 20px system-ui';
     ctx.textAlign = 'left';
-    ctx.fillText('RELICS / PROTOCOL CHIPS', 130, 470);
+    ctx.fillText('RELICS / PROTOCOL CHIPS', 130, 480);
     this.shopRelics.forEach((slot, i) => {
       const relic = RELIC_DB[slot.id];
-      const x = 130 + i * 255;
-      this.shopItem(ctx, x, 500, 210, 130, relic.name, relic.text, slot.price, relic.color, slot.sold);
-      if (!slot.sold) this.buttons.push(new Button('shopRelic', x, 500, 210, 150, relic.name, { slot }, relic.color));
+      const x = 130 + i * 225;
+      this.shopItem(ctx, x, 510, 190, 130, relic.name, relic.text, slot.price, relic.color, slot.sold);
+      if (!slot.sold) this.buttons.push(new Button('shopRelic', x, 510, 190, 150, relic.name, { slot }, relic.color));
     });
 
+    this.panel(ctx, 820, 440, 690, 280, '#b164ff', .40);
     ctx.fillStyle = '#aefcff';
     ctx.font = '950 20px system-ui';
     ctx.textAlign = 'left';
-    ctx.fillText('UTILITIES / SERVICES', 900, 470);
+    ctx.fillText('UTILITIES / SERVICES', 860, 480);
     this.shopUtilities.forEach((slot, i) => {
       const item = UTILITY_DB[slot.id];
-      const x = 900 + (i % 2) * 245;
-      const y = 500 + Math.floor(i / 2) * 125;
+      const x = 860 + (i % 2) * 245;
+      const y = 510 + Math.floor(i / 2) * 116;
       this.shopItem(ctx, x, y, 210, 96, item.name, item.text, slot.price, item.color, slot.sold);
       if (!slot.sold || slot.id === 'remove_card') this.buttons.push(new Button('shopUtility', x, y, 210, 108, item.name, { slot }, item.color));
     });
-
-    this.button(ctx, 'refreshShop', 1030, 785, 220, 58, 'REFRESH 25', '#ffd86a');
-    this.button(ctx, 'leaveShop', 1280, 785, 220, 58, 'LEAVE SHOP', '#54f8ff');
   }
 
   shopItem(ctx, x, y, w, h, title, text, price, color, sold = false) {
