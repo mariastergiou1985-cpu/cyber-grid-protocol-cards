@@ -409,6 +409,16 @@ function drawContain(ctx, img, x, y, w, h) {
   ctx.drawImage(img, dx, dy, dw, dh);
   return { x: dx, y: dy, w: dw, h: dh };
 }
+function drawContainBottom(ctx, img, x, y, w, h) {
+  if (!img) return null;
+  const s = Math.min(w / img.naturalWidth, h / img.naturalHeight);
+  const dw = img.naturalWidth * s;
+  const dh = img.naturalHeight * s;
+  const dx = x + (w - dw) / 2;
+  const dy = y + h - dh;
+  ctx.drawImage(img, dx, dy, dw, dh);
+  return { x: dx, y: dy, w: dw, h: dh };
+}
 function drawFallbackBackground(ctx, label = 'CYBER GRID') {
   ctx.fillStyle = '#02060d';
   ctx.fillRect(0, 0, W, H);
@@ -2347,13 +2357,14 @@ export class Game {
     const xs = layouts[alive.length] || layouts[3];
     alive.forEach((e, i) => {
       const x = xs[i];
-      const spriteTop = i % 2 ? 300 : 318;
-      const spriteW = e.spriteW || (e.id === 'toxic_drone_hound' ? 205 : 190);
-      const spriteH = e.spriteH || (e.id === 'toxic_drone_hound' ? 245 : 260);
+      const spriteW = e.spriteW || (alive.length >= 3 ? 230 : 255);
+      const spriteH = e.spriteH || (alive.length >= 3 ? 275 : 300);
+      const spriteBottom = e.spriteBottom || (i % 2 ? 684 : 692);
+      const spriteTop = spriteBottom - spriteH;
       const img = this.assets.get(e.art);
-      const uiY = spriteTop - 136;
+      const uiY = spriteTop - 118;
       const targetW = spriteW + 34;
-      this.shadow(ctx, x, 696, 142, 30, e.color);
+      this.shadow(ctx, x, spriteBottom + 8, 142, 30, e.color);
       const enemyIndex = this.enemies.indexOf(e);
       this.buttons.push(new Button('enemyTarget', x - targetW / 2, spriteTop - 16, targetW, spriteH + 34, e.name, { index: enemyIndex }, e.color));
       if (enemyIndex === this.selectedTargetIndex) {
@@ -2383,10 +2394,10 @@ export class Game {
         ctx.save();
         ctx.shadowColor = e.color;
         ctx.shadowBlur = 14;
-        drawContain(ctx, img, x - spriteW / 2, spriteTop, spriteW, spriteH);
+        drawContainBottom(ctx, img, x - spriteW / 2, spriteTop, spriteW, spriteH);
         ctx.restore();
       } else {
-        this.fallbackUnit(ctx, x, 535, e.color, 'ENEMY');
+        this.fallbackUnit(ctx, x, spriteBottom - 150, e.color, 'ENEMY');
       }
     });
   }
